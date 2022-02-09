@@ -1,0 +1,20 @@
+plugins {
+    id("java")
+    id("gronk").version("latest.release")
+}
+
+sourceSets {
+    test {
+        java.srcDirs = []
+    }
+}
+
+repositories {
+    maven("maven.auoeke.net")
+}
+
+dependencies {
+    implementation("org.ow2.asm:asm-tree")
+    implementation("net.auoeke:reflect")
+    implementation("net.bytebuddy:byte-buddy-agent")
+}
