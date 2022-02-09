@@ -14,7 +14,7 @@ to be compiled successfully.
 Not yet published to the plugin marketplace.
 
 ### Using the compiler plugin
-It is hosted as `net.auoeke:uncheck` at https://maven.auoeke.net.
+It currently requires Java 17 or later and is hosted as `net.auoeke:uncheck` at https://maven.auoeke.net.
 
 #### Gradle
 ```groovy
