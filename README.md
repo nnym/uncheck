@@ -11,7 +11,7 @@ public static void evilMethod() {
 to be compiled successfully.
 
 ### Using the IntelliJ plugin
-Not yet published to the plugin marketplace.
+Not yet published to the plugin marketplace; for now download and add [the plugin](https://github.com/auoeke/uncheck/releases/tag/0.0.1) manually.
 
 ### Using the compiler plugin
 It currently requires Java 17 or later and is hosted as `net.auoeke:uncheck` at https://maven.auoeke.net.
