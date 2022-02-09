@@ -3,6 +3,9 @@ plugins {
     id("org.jetbrains.intellij").version("latest.integration")
 }
 
+javaVersion(11)
+
 intellij {
-    version = "IU-LATEST-EAP-SNAPSHOT"
+    version = "IC-LATEST-EAP-SNAPSHOT"
+    plugins = ["java"]
 }

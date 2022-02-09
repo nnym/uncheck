@@ -1,6 +1,14 @@
 plugins {
     id("java")
+    id("maven-publish")
     id("gronk").version("latest.release")
+}
+
+allprojects {
+    ["java", "gronk"].each(plugins::apply)
+
+    group("net.auoeke")
+    version("0.0.1")
 }
 
 sourceSets {
@@ -17,4 +25,13 @@ dependencies {
     implementation("org.ow2.asm:asm-tree")
     implementation("net.auoeke:reflect")
     implementation("net.bytebuddy:byte-buddy-agent")
+}
+
+publishing {
+    repositories {
+        maven("maven.auoeke.net") {
+            username(systemProperty("maven.username"))
+            password(systemProperty("maven.password"))
+        }
+    }
 }

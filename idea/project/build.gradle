@@ -1,0 +1,18 @@
+plugins {
+    id("java")
+}
+
+sourceSets {
+    main {
+        java.srcDir("source")
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {url = "https://maven.auoeke.net"}
+}
+
+dependencies {
+    annotationProcessor("net.auoeke:uncheck:0.0.1")
+}
