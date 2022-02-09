@@ -1,5 +1,4 @@
 plugins {
-    id("gronk")
     id("org.jetbrains.intellij").version("latest.integration")
 }
 
