@@ -13,7 +13,13 @@
     <description>
         <![CDATA[
         The IDE side of <a href="https://git.auoeke.net/uncheck">uncheck</a>, a javac plugin that disables exception checking.
-        This IDE plugin marks all exceptions as handled if the corresponding compiler plugin is present.
+        This IDE plugin marks all checked exceptions as handled if the corresponding compiler plugin is present in order to make code like
+        <pre>
+public static void evilMethod() {
+    Files.writeString(Path.of("file.txt"), "text");
+    throw new IOException();
+}</pre>
+        compilable.
         ]]>
     </description>
 

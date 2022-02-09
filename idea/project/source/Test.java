@@ -10,4 +10,9 @@ public class Test {
     public static void evilMethod(String file, String contents) throws IOException {
         Files.writeString(Path.of(file), contents);
     }
+
+    public static void evilMethod() {
+        Files.writeString(Path.of("file.txt"), "text");
+        throw new IOException();
+    }
 }
