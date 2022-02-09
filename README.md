@@ -1,7 +1,7 @@
 This repository contains a Java compiler plugin and an IntelliJ plugin.
 The former disables exception checking in javac and the latter disables exception checking in the IDE.
 
-These plugins enable code like
+Together these plugins enable code like
 ```java
 public static void evilMethod() {
     Files.writeString(Path.of("file.txt"), "text");
