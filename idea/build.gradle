@@ -1,0 +1,8 @@
+plugins {
+    id("gronk")
+    id("org.jetbrains.intellij").version("latest.integration")
+}
+
+intellij {
+    version = "IU-LATEST-EAP-SNAPSHOT"
+}
