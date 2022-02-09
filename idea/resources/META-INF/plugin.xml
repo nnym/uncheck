@@ -13,6 +13,7 @@
     <description>
         <![CDATA[
         The IDE side of <a href="https://git.auoeke.net/uncheck">uncheck</a>, a javac plugin that disables exception checking.
+        This IDE plugin marks all exceptions as handled if the corresponding compiler plugin is present.
         ]]>
     </description>
 
