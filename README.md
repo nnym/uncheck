@@ -26,3 +26,5 @@ dependencies {
     annotationProcessor("net.auoeke:uncheck:0.0.1")
 }
 ```
+
+![](idea/resources/icon.png)
