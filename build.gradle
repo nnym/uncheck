@@ -9,6 +9,8 @@ allprojects {
 
     group("net.auoeke")
     version("0.0.1")
+
+    javaVersion(17)
 }
 
 sourceSets {

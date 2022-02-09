@@ -14,7 +14,7 @@ to be compiled successfully.
 Not yet published to the plugin marketplace.
 
 ### Using the compiler plugin
-It is hosted as `net.auoeke:uncheck` in https://maven.auoeke.net.
+It is hosted as `net.auoeke:uncheck` at https://maven.auoeke.net.
 
 #### Gradle
 ```groovy
