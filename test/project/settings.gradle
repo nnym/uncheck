@@ -1,0 +1,5 @@
+includeBuild("../..") {
+    dependencySubstitution {
+        substitute(module("net.auoeke:uncheck")).using(project(":"))
+    }
+}

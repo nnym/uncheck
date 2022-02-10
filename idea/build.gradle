@@ -12,8 +12,25 @@ sourceSets {
     }
 }
 
+repositories {
+    maven("maven.auoeke.net")
+}
+
+dependencies {
+    implementation("net.bytebuddy:byte-buddy-agent:latest.release")
+    annotationProcessor(rootProject)
+}
+
 intellij {
     version = "IC-LATEST-EAP-SNAPSHOT"
     pluginName = rootProject.name
     plugins = ["java"]
+}
+
+jar {
+    from(rootProject.file("LICENSE"))
+}
+
+runIde {
+    dependsOn(rootProject.build)
 }
