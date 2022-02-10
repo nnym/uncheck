@@ -16,7 +16,12 @@ public static void evilMethod() {
         compilable.
         ]]>
     </description>
-    <change-notes>Initial release.</change-notes>
+    <change-notes>
+        <![CDATA[
+        Catching checked exceptions is no longer erroneous.<br>
+        Fixed an edge case with field initializers and lambda expressions.
+        ]]>
+    </change-notes>
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
     <applicationListeners>
