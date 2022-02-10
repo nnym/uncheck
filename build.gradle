@@ -5,7 +5,10 @@ plugins {
 }
 
 allprojects {
-    ["java", "gronk"].each(plugins::apply)
+    plugins.with {
+        apply("java")
+        apply("gronk")
+    }
 
     group("net.auoeke")
     version("0.0.2")

@@ -6,9 +6,7 @@ javaVersion(11)
 
 sourceSets {
     main {
-        resources {
-            exclude("*.png", "*.xcf")
-        }
+        resources.exclude("*.png", "*.xcf")
     }
 }
 
@@ -25,10 +23,6 @@ intellij {
     version = "IC-LATEST-EAP-SNAPSHOT"
     pluginName = rootProject.name
     plugins = ["java"]
-}
-
-jar {
-    from(rootProject.file("LICENSE"))
 }
 
 runIde {
