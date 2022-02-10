@@ -2,6 +2,7 @@ plugins {
     id("org.jetbrains.intellij").version("latest.integration")
 }
 
+version("0.0.2")
 javaVersion(11)
 
 sourceSets {
@@ -23,6 +24,11 @@ intellij {
     version = "IC-LATEST-EAP-SNAPSHOT"
     pluginName = rootProject.name
     plugins = ["java"]
+    updateSinceUntilBuild = false
+}
+
+jar {
+    archiveBaseName.set(rootProject.name)
 }
 
 runIde {
