@@ -8,14 +8,14 @@ allprojects {
     ["java", "gronk"].each(plugins::apply)
 
     group("net.auoeke")
-    version("0.0.1")
+    version("0.0.2")
 
     javaVersion(17)
-}
 
-sourceSets {
-    test {
-        java.srcDirs = []
+    jar {
+        from(rootProject.file("LICENSE")) {
+            into("META-INF")
+        }
     }
 }
 
@@ -27,6 +27,14 @@ dependencies {
     implementation("org.ow2.asm:asm-tree")
     implementation("net.auoeke:reflect")
     implementation("net.bytebuddy:byte-buddy-agent")
+
+    testImplementation(gradleTestKit())
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+test {
+    useJUnitPlatform()
 }
 
 publishing {

@@ -14,5 +14,5 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor("net.auoeke:uncheck:0.0.1")
+    annotationProcessor("net.auoeke:uncheck")
 }

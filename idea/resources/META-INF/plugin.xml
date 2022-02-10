@@ -19,6 +19,9 @@ public static void evilMethod() {
     <change-notes>Initial release.</change-notes>
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
+    <applicationListeners>
+        <listener class="net.auoeke.uncheck.intellij.LifecycleListener" topic="com.intellij.ide.AppLifecycleListener"/>
+    </applicationListeners>
     <extensions defaultExtensionNs="com.intellij">
         <custom.exception.handler implementation="net.auoeke.uncheck.intellij.UnconditionalExceptionHandler"/>
     </extensions>

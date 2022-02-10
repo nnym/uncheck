@@ -6,5 +6,4 @@ pluginManagement {
     }
 }
 
-include(":test")
 include(":idea")
