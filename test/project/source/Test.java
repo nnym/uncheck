@@ -12,6 +12,12 @@ public class Test {
     static final Unsafe U = (Unsafe) MethodHandles.privateLookupIn(Unsafe.class, MethodHandles.lookup()).findStaticVarHandle(Unsafe.class, "theUnsafe", Unsafe.class).get();
     Object O = new JarFile("");
 
+    public Test() {
+        System.out.println("pre-Object::new");
+        super();
+        System.out.println("post-Object::new");
+    }
+
     public static void main(String... args) {
         evilMethod("output.txt", "I know what I'm doing.");
     }
@@ -21,6 +27,21 @@ public class Test {
     }
 
     public static void evilMethod() {
+        Files.writeString(Path.of("file.txt"), "text");
+        throw new IOException();
+    }
+}
+
+class Example {
+    Example(String a, String b) {}
+
+    Example(String s) {
+        this.evilMethod();
+        var ab = s.split(":");
+        this(ab[0], ab[1]);
+    }
+
+    void evilMethod() {
         Files.writeString(Path.of("file.txt"), "text");
         throw new IOException();
     }

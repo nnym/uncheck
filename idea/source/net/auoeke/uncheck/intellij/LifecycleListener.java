@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import com.intellij.codeInsight.ExceptionUtil;
+import com.intellij.codeInsight.daemon.impl.analysis.HighlightMethodUtil;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightUtil;
 import com.intellij.ide.AppLifecycleListener;
 import net.bytebuddy.agent.ByteBuddyAgent;
@@ -38,13 +39,26 @@ public class LifecycleListener implements AppLifecycleListener, Opcodes {
         var instrumentation = ByteBuddyAgent.install();
 
         // Make checked exceptions catchable.
-        transform(instrumentation, HighlightUtil.class, node -> returnEmptyListIfNoChecking(node.methods.stream().filter(m -> m.name.equals("checkExceptionThrownInTry")).findAny().get()));
+        transform(instrumentation, HighlightUtil.class, 0, node -> returnEmptyListIfNoChecking(method(node, "checkExceptionThrownInTry")));
 
         // Workaround for IDEA-288417.
-        transform(instrumentation, ExceptionUtil.class, node -> returnEmptyListIfNoChecking(node.methods.stream().filter(m -> m.name.equals("getOwnUnhandledExceptions")).findAny().get()));
+        transform(instrumentation, ExceptionUtil.class, 0, node -> returnEmptyListIfNoChecking(method(node, "getOwnUnhandledExceptions")));
+
+        // Allow the first statement to not be a constructor invocation.
+        transform(instrumentation, HighlightMethodUtil.class, 0, node -> {
+            var instructions = method(node, "checkConstructorCallProblems").instructions;
+            var instruction = instructions.getLast();
+
+            while (instruction.getOpcode() != ARETURN) {
+                instruction = instruction.getPrevious();
+            }
+
+            instructions.insertBefore(instruction, new InsnNode(POP));
+            instructions.insertBefore(instruction, new InsnNode(ACONST_NULL));
+        });
     }
 
-    private static void transform(Instrumentation instrumentation, Class<?> target, Consumer<ClassNode> transformer) {
+    private static void transform(Instrumentation instrumentation, Class<?> target, int options, Consumer<ClassNode> transformer) {
         Transformer t = (module, loader, name, type, domain, bytes) -> {
             if (type != target) {
                 return bytes;
@@ -53,7 +67,7 @@ public class LifecycleListener implements AppLifecycleListener, Opcodes {
             var node = new ClassNode();
             new ClassReader(bytes).accept(node, 0);
             transformer.accept(node);
-            var writer = new ClassWriter(0);
+            var writer = new ClassWriter(options);
             node.accept(writer);
 
             return writer.toByteArray();
@@ -62,6 +76,10 @@ public class LifecycleListener implements AppLifecycleListener, Opcodes {
         instrumentation.addTransformer(t, true);
         instrumentation.retransformClasses(target);
         instrumentation.removeTransformer(t);
+    }
+
+    private static MethodNode method(ClassNode type, String name) {
+        return type.methods.stream().filter(method -> method.name.equals(name)).findAny().get();
     }
 
     private static void returnEmptyListIfNoChecking(MethodNode method) {

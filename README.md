@@ -1,11 +1,26 @@
-This repository contains a Java compiler plugin and an IntelliJ plugin.
-The former disables exception checking in javac and the latter disables exception checking in the IDE.
+This project comprises a Java compiler plugin and an IntelliJ plugin.
+The former modifies javac and the latter fixes the IDE's error reporting.
 
+### Features
+- No exception checking and
+- no restriction on the first statement of a constructor.
+
+### Example
 Together these plugins enable code like
 ```java
-public static void evilMethod() {
-    Files.writeString(Path.of("file.txt"), "text");
-    throw new IOException();
+class Example {
+    Example(String a, String b) {}
+
+    Example(String s) {
+        this.evilMethod();
+        var ab = s.split(":");
+        this(ab[0], ab[1]);
+    }
+
+    void evilMethod() {
+        Files.writeString(Path.of("file.txt"), "text");
+        throw new IOException();
+    }
 }
 ```
 to be compiled successfully.
@@ -25,7 +40,7 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor("net.auoeke:uncheck:0.0.1")
+    annotationProcessor("net.auoeke:uncheck:latest.release")
 }
 ```
 
