@@ -10,6 +10,7 @@ import java.util.jar.JarFile;
 
 public class Test {
     static final Unsafe U = (Unsafe) MethodHandles.privateLookupIn(Unsafe.class, MethodHandles.lookup()).findStaticVarHandle(Unsafe.class, "theUnsafe", Unsafe.class).get();
+    Object O = new JarFile("");
 
     public static void main(String... args) {
         evilMethod("output.txt", "I know what I'm doing.");
