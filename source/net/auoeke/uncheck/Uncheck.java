@@ -1,6 +1,8 @@
 package net.auoeke.uncheck;
 
+import java.lang.instrument.Instrumentation;
 import java.util.Objects;
+import java.util.function.Consumer;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Plugin;
 import lombok.SneakyThrows;
@@ -8,10 +10,14 @@ import net.auoeke.reflect.Reflect;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
-public class Uncheck implements Plugin {
+public class Uncheck implements Plugin, Opcodes {
     @Override public String getName() {
         return "uncheck";
     }
@@ -23,18 +29,34 @@ public class Uncheck implements Plugin {
     }
 
     @SneakyThrows
-    private static void disableFlow() {
-        var target = Class.forName("com.sun.tools.javac.comp.Flow");
-
-        Transformer transformer = (module, loader, name, type, domain, bytes) -> {
+    private static void transform(Instrumentation instrumentation, Class<?> target, Consumer<ClassNode> transformer) {
+        Transformer t = (module, loader, name, type, domain, bytes) -> {
             if (target != type) {
                 return bytes;
             }
 
             var node = new ClassNode();
             new ClassReader(bytes).accept(node, 0);
+            transformer.accept(node);
+            var writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            node.accept(writer);
 
-            var analyzeTree = node.methods.stream().filter(method -> method.name.equals("analyzeTree")).findAny().get();
+            return writer.toByteArray();
+        };
+
+        instrumentation.addTransformer(t, true);
+        instrumentation.retransformClasses(target);
+        instrumentation.removeTransformer(t);
+    }
+
+    private static MethodNode method(ClassNode type, String name) {
+        return type.methods.stream().filter(method -> method.name.equals(name)).findAny().get();
+    }
+
+    @SneakyThrows
+    private static void disableFlow(Instrumentation instrumentation) {
+        transform(instrumentation, Class.forName("com.sun.tools.javac.comp.Flow"), node -> {
+            var analyzeTree = method(node, "analyzeTree");
             var instructions = analyzeTree.instructions;
 
             for (var instruction : instructions) {
@@ -43,20 +65,27 @@ public class Uncheck implements Plugin {
                     break;
                 }
             }
+        });
+    }
 
-            var writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-            node.accept(writer);
+    @SneakyThrows
+    private static void allowNonConstructorFirstStatement(Instrumentation instrumentation) {
+        transform(instrumentation, Class.forName("com.sun.tools.javac.comp.Attr"), node -> {
+            var checkFirstConstructorStat = method(node, "checkFirstConstructorStat");
 
-            return writer.toByteArray();
-        };
+            for (var instruction : checkFirstConstructorStat.instructions) {
+                if (instruction instanceof VarInsnNode var && var.var == 3) {
+                    ((JumpInsnNode) instruction.getNext()).setOpcode(GOTO);
 
-        var instrumentation = Objects.requireNonNullElseGet(Reflect.instrumentation(), ByteBuddyAgent::install);
-        instrumentation.addTransformer(transformer, true);
-        instrumentation.retransformClasses(target);
-        instrumentation.removeTransformer(transformer);
+                    break;
+                }
+            }
+        });
     }
 
     static {
-        disableFlow();
+        var instrumentation = Objects.requireNonNullElseGet(Reflect.instrumentation(), ByteBuddyAgent::install);
+        disableFlow(instrumentation);
+        allowNonConstructorFirstStatement(instrumentation);
     }
 }
