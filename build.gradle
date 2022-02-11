@@ -4,7 +4,7 @@ plugins {
     id("gronk").version("latest.release")
 }
 
-version("0.0.1")
+version("0.0.2")
 
 allprojects {
     plugins.with {
@@ -29,8 +29,8 @@ repositories {
 
 dependencies {
     implementation("org.ow2.asm:asm-tree")
-    implementation("net.auoeke:reflect")
     implementation("net.bytebuddy:byte-buddy-agent")
+    implementation("net.auoeke:reflect")
 
     testImplementation(gradleTestKit())
     testImplementation("org.junit.jupiter:junit-jupiter-api")
@@ -38,6 +38,7 @@ dependencies {
 }
 
 test {
+    mustRunAfter(clean)
     useJUnitPlatform()
 }
 
