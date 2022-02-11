@@ -10,6 +10,7 @@ import com.intellij.codeInsight.ExceptionUtil;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightUtil;
 import com.intellij.ide.AppLifecycleListener;
 import net.bytebuddy.agent.ByteBuddyAgent;
+import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -26,8 +27,8 @@ import org.objectweb.asm.tree.VarInsnNode;
 import sun.misc.Unsafe;
 
 public class LifecycleListener implements AppLifecycleListener, Opcodes {
-    @Override public void appStarted() {
-        var unsafe = (Unsafe) MethodHandles.privateLookupIn(Unsafe.class, MethodHandles.lookup()).findStaticVarHandle(Unsafe.class, "theUnsafe", Unsafe.class).get();
+    @Override public void appFrameCreated(@NotNull List<String> commandLineArgs) {
+        var unsafe = (Unsafe) MethodHandles.privateLookupIn(Unsafe.class, MethodHandles.lookup()).findStaticGetter(Unsafe.class, "theUnsafe", Unsafe.class).invoke();
         var lookup = (MethodHandles.Lookup) unsafe.getObject(MethodHandles.Lookup.class, unsafe.staticFieldOffset(MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP")));
         var uncheckBytecode = Uncheck.class.getResourceAsStream("Uncheck.class").readAllBytes();
         lookup.bind(HighlightUtil.class.getClassLoader(), "defineClass", MethodType.methodType(Class.class, String.class, byte[].class, int.class, int.class)).invoke(
@@ -35,7 +36,11 @@ public class LifecycleListener implements AppLifecycleListener, Opcodes {
         );
 
         var instrumentation = ByteBuddyAgent.install();
+
+        // Make checked exceptions catchable.
         transform(instrumentation, HighlightUtil.class, node -> returnEmptyListIfNoChecking(node.methods.stream().filter(m -> m.name.equals("checkExceptionThrownInTry")).findAny().get()));
+
+        // Workaround for IDEA-288417.
         transform(instrumentation, ExceptionUtil.class, node -> returnEmptyListIfNoChecking(node.methods.stream().filter(m -> m.name.equals("getOwnUnhandledExceptions")).findAny().get()));
     }
 

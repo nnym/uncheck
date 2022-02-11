@@ -2,9 +2,10 @@ plugins {
     id("java")
     id("maven-publish")
     id("gronk").version("latest.release")
+    id("io.freefair.lombok").version("latest.release")
 }
 
-version("0.0.2")
+version("0.0.1")
 
 allprojects {
     plugins.with {
@@ -16,15 +17,16 @@ allprojects {
 
     javaVersion(17)
 
+    repositories {
+        mavenCentral()
+        maven("maven.auoeke.net")
+    }
+
     jar {
         from(rootProject.file("LICENSE")) {
             into("META-INF")
         }
     }
-}
-
-repositories {
-    maven("maven.auoeke.net")
 }
 
 dependencies {
