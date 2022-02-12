@@ -18,7 +18,7 @@ public class HighlightFilter implements HighlightInfoFilter {
     private static final Map<Locale, Map<String, Pattern>> messages = new IdentityHashMap<>();
 
     @Override public boolean accept(@NotNull HighlightInfo info, @Nullable PsiFile file) {
-        if (file == null || info.getSeverity().compareTo(HighlightSeverity.ERROR) < 0 || !Uncheck.disableChecking(ModuleUtil.findModuleForFile(file))) {
+        if (file == null || info.getSeverity().compareTo(HighlightSeverity.ERROR) < 0 || file.isWritable() && !Uncheck.disableChecking(ModuleUtil.findModuleForFile(file))) {
             return true;
         }
 

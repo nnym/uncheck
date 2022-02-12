@@ -12,7 +12,6 @@ sourceSets {
 }
 
 dependencies {
-    implementation("net.bytebuddy:byte-buddy-agent:latest.release")
     annotationProcessor(rootProject)
 }
 
