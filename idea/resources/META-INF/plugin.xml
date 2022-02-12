@@ -30,7 +30,7 @@
     </description>
     <change-notes>
         <![CDATA[
-        Constructors that invoke throwing methods are no longer red.
+        Removed experimental API usage.
         ]]>
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
