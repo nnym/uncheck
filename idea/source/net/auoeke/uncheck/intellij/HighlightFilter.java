@@ -89,6 +89,9 @@ public class HighlightFilter implements HighlightInfoFilter {
                || Stream.of(constructor.getBody().getChildren())
                    .filter(PsiExpressionStatement.class::isInstance)
                    .map(statement -> ((PsiExpressionStatement) statement).getExpression())
-                   .anyMatch(expression -> expression instanceof PsiMethodCallExpression && initialized(((PsiMethodCallExpression) expression).resolveMethod(), field));
+                   .filter(PsiMethodCallExpression.class::isInstance)
+                   .map(call -> ((PsiMethodCallExpression) call).resolveMethod())
+                   .filter(c -> c != constructor)
+                   .anyMatch(c -> initialized(c, field));
     }
 }
