@@ -4,13 +4,20 @@ import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import com.intellij.codeInsight.daemon.JavaErrorBundle;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.codeInsight.daemon.impl.HighlightInfoFilter;
 import com.intellij.codeInsight.daemon.impl.HighlightInfoType;
+import com.intellij.codeInsight.daemon.impl.analysis.HighlightControlFlowUtil;
 import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.psi.PsiExpressionStatement;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,12 +29,41 @@ public class HighlightFilter implements HighlightInfoFilter {
             return true;
         }
 
-        return info.type != HighlightInfoType.UNHANDLED_EXCEPTION
-               && !message("constructor.call.must.be.first.statement", "(this|super)\\(\\)").matcher(info.getDescription()).matches()
-               && !message("exception.never.thrown.try", "[.A-Za-z]+").matcher(info.getDescription()).matches();
+        if (info.type == HighlightInfoType.UNHANDLED_EXCEPTION
+            || matches(info, "constructor.call.must.be.first.statement", "(this|super)\\(\\)")
+            || matches(info, "exception.never.thrown.try", "[.$\\w]+")) {
+            return false;
+        }
+
+        var field = file.findElementAt(info.getStartOffset());
+
+        while (true) {
+            if (field == null) return true;
+            if (field instanceof PsiField) break;
+
+            field = field.getParent();
+        }
+
+        var f = (PsiField) field;
+        return f.hasModifier(JvmModifier.STATIC) || !(matches(info, "variable.not.initialized", "[.$\\w]+") && Stream.of(f.getContainingClass().getConstructors()).allMatch(constructor -> initialized(constructor, f)));
     }
 
-    private static Pattern message(String key, String... arguments) {
-        return messages.computeIfAbsent(JavaErrorBundle.getLocale(), l -> new IdentityHashMap<>()).computeIfAbsent(key, k -> Pattern.compile(JavaErrorBundle.message(k, arguments)));
+    private static boolean matches(HighlightInfo info, String key, String... arguments) {
+        return messages.computeIfAbsent(JavaErrorBundle.getLocale(), l -> new IdentityHashMap<>()).computeIfAbsent(key, k -> Pattern.compile(JavaErrorBundle.message(k, arguments))).matcher(info.getDescription()).matches();
+    }
+
+    private static boolean initialized(PsiMethod constructor, PsiField field) {
+        return HighlightControlFlowUtil.variableDefinitelyAssignedIn(field, constructor.getBody()) || Stream.of(constructor.getBody().getChildren()).anyMatch(child -> {
+            if (child instanceof PsiExpressionStatement) {
+                var expression = ((PsiExpressionStatement) child).getExpression();
+
+                if (expression instanceof PsiMethodCallExpression) {
+                    return initialized(((PsiMethodCallExpression) expression).resolveMethod(), field);
+                }
+            }
+
+            return false;
+        });
+
     }
 }
