@@ -81,14 +81,12 @@ public class HighlightFilter implements HighlightInfoFilter {
     }
 
     private static boolean initialized(PsiMethod constructor, PsiField field) {
-        var body = constructor.getBody();
-
-        if (body == null) {
+        if (constructor == null || constructor.getBody() == null) {
             return false;
         }
 
-        return HighlightControlFlowUtil.variableDefinitelyAssignedIn(field, body)
-               || Stream.of(body.getChildren())
+        return HighlightControlFlowUtil.variableDefinitelyAssignedIn(field, constructor.getBody())
+               || Stream.of(constructor.getBody().getChildren())
                    .filter(PsiExpressionStatement.class::isInstance)
                    .map(statement -> ((PsiExpressionStatement) statement).getExpression())
                    .anyMatch(expression -> expression instanceof PsiMethodCallExpression && initialized(((PsiMethodCallExpression) expression).resolveMethod(), field));

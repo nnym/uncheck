@@ -31,7 +31,7 @@
     </description>
     <change-notes>
         <![CDATA[
-        Lambda and inner class variables may be reassigned.
+        Fixed an error that arose from empty constructors.
         ]]>
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
