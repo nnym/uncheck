@@ -11,13 +11,13 @@ import com.intellij.codeInsight.daemon.impl.HighlightInfoFilter;
 import com.intellij.codeInsight.daemon.impl.HighlightInfoType;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightControlFlowUtil;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.psi.PsiExpressionStatement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiModifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,6 +35,10 @@ public class HighlightFilter implements HighlightInfoFilter {
             return false;
         }
 
+        if (!matches(info, "variable.not.initialized", "[.$\\w]+")) {
+            return true;
+        }
+
         var field = file.findElementAt(info.getStartOffset());
 
         while (true) {
@@ -45,11 +49,12 @@ public class HighlightFilter implements HighlightInfoFilter {
         }
 
         var f = (PsiField) field;
-        return f.hasModifier(JvmModifier.STATIC) || !(matches(info, "variable.not.initialized", "[.$\\w]+") && Stream.of(f.getContainingClass().getConstructors()).allMatch(constructor -> initialized(constructor, f)));
+        return f.getModifierList().hasModifierProperty(PsiModifier.STATIC) || !Stream.of(f.getContainingClass().getConstructors()).allMatch(constructor -> initialized(constructor, f));
     }
 
     private static boolean matches(HighlightInfo info, String key, String... arguments) {
-        return messages.computeIfAbsent(JavaErrorBundle.getLocale(), l -> new IdentityHashMap<>()).computeIfAbsent(key, k -> Pattern.compile(JavaErrorBundle.message(k, arguments))).matcher(info.getDescription()).matches();
+        return messages.computeIfAbsent(JavaErrorBundle.getLocale(), l -> new IdentityHashMap<>())
+            .computeIfAbsent(key, k -> Pattern.compile(JavaErrorBundle.message(k, arguments))).matcher(info.getDescription()).matches();
     }
 
     private static boolean initialized(PsiMethod constructor, PsiField field) {
