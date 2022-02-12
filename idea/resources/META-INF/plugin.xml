@@ -10,10 +10,14 @@
          a Java plugin that disables exception checking and the requirement that the first statement of a constructor be a constructor invocation.
         This IDE plugin only fixes error highlighting.
         <pre>class Example {
-    Example(String a, String b) {}
+    final String a, b;
+
+    Example(String a, String b) {
+        this.a = a;
+        this.b = b;
+    }
 
     Example(String s) {
-        this.evilMethod();
         var ab = s.split(":");
         this(ab[0], ab[1]);
     }
