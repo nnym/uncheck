@@ -1,11 +1,9 @@
 import sun.misc.Unsafe;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.function.Consumer;
 import java.util.jar.JarFile;
 
 public class Test {
