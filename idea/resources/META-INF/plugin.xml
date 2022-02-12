@@ -6,20 +6,27 @@
     <idea-version since-build="213"/>
     <description>
         <![CDATA[
-        The IDE side of <a href="https://git.auoeke.net/uncheck">uncheck</a>, a Java plugin that disables exception checking.
-        This IDE plugin marks all checked exceptions as handled if the corresponding compiler plugin is present in order to make code like
-        <pre>
-public static void evilMethod() {
-    Files.writeString(Path.of("file.txt"), "text");
-    throw new IOException();
-}</pre>
-        compilable.
-        ]]>
+        The IDE side of <a href="https://git.auoeke.net/uncheck">uncheck</a>,
+         a Java plugin that disables exception checking and the requirement that the first statement of a constructor be a constructor invocation.
+        This IDE plugin only fixes error highlighting.
+        <pre>class Example {
+    Example(String a, String b) {}
+
+    Example(String s) {
+        this.evilMethod();
+        var ab = s.split(":");
+        this(ab[0], ab[1]);
+    }
+
+    void evilMethod() {
+        Files.writeString(Path.of("file.txt"), "text");
+        throw new IOException();
+    }
+}</pre>]]>
     </description>
     <change-notes>
         <![CDATA[
-        Catching checked exceptions is no longer erroneous.<br>
-        Fixed an edge case with field initializers and lambda expressions.
+        The first statement of a constructor no longer has to be a constructor invocation.
         ]]>
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
@@ -29,5 +36,6 @@ public static void evilMethod() {
     </applicationListeners>
     <extensions defaultExtensionNs="com.intellij">
         <custom.exception.handler implementation="net.auoeke.uncheck.intellij.UnconditionalExceptionHandler"/>
+        <daemon.highlightInfoFilter implementation="net.auoeke.uncheck.intellij.HighlightFilter"/>
     </extensions>
 </idea-plugin>

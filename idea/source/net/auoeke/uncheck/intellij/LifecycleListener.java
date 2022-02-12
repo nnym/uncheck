@@ -5,7 +5,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 import com.intellij.codeInsight.ExceptionUtil;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightMethodUtil;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightUtil;
@@ -38,27 +37,32 @@ public class LifecycleListener implements AppLifecycleListener, Opcodes {
 
         var instrumentation = ByteBuddyAgent.install();
 
+        if (true) return;
+
         // Make checked exceptions catchable.
-        transform(instrumentation, HighlightUtil.class, 0, node -> returnEmptyListIfNoChecking(method(node, "checkExceptionThrownInTry")));
+        transform(instrumentation, HighlightUtil.class, node -> returnEmptyListIfNoChecking(method(node, "checkExceptionThrownInTry")));
 
         // Workaround for IDEA-288417.
-        transform(instrumentation, ExceptionUtil.class, 0, node -> returnEmptyListIfNoChecking(method(node, "getOwnUnhandledExceptions")));
+        transform(instrumentation, ExceptionUtil.class, node -> returnEmptyListIfNoChecking(method(node, "getOwnUnhandledExceptions")));
 
         // Allow the first statement to not be a constructor invocation.
-        transform(instrumentation, HighlightMethodUtil.class, 0, node -> {
-            var instructions = method(node, "checkConstructorCallProblems").instructions;
+        transform(instrumentation, HighlightMethodUtil.class, node -> {
+            var method = method(node, "checkConstructorCallProblems");
+            var instructions = method.instructions;
             var instruction = instructions.getLast();
 
             while (instruction.getOpcode() != ARETURN) {
                 instruction = instruction.getPrevious();
             }
 
-            instructions.insertBefore(instruction, new InsnNode(POP));
-            instructions.insertBefore(instruction, new InsnNode(ACONST_NULL));
+            instructions.insertBefore(instruction, ifNoChecking(new FrameNode(F_SAME1, 0, null, 1, new Object[]{Type.getReturnType(method.desc).getInternalName()}), i -> {
+                i.add(new InsnNode(POP));
+                i.add(new InsnNode(ACONST_NULL));
+            }));
         });
     }
 
-    private static void transform(Instrumentation instrumentation, Class<?> target, int options, Consumer<ClassNode> transformer) {
+    private static void transform(Instrumentation instrumentation, Class<?> target, Consumer<ClassNode> transformer) {
         Transformer t = (module, loader, name, type, domain, bytes) -> {
             if (type != target) {
                 return bytes;
@@ -67,7 +71,7 @@ public class LifecycleListener implements AppLifecycleListener, Opcodes {
             var node = new ClassNode();
             new ClassReader(bytes).accept(node, 0);
             transformer.accept(node);
-            var writer = new ClassWriter(options);
+            var writer = new ClassWriter(0);
             node.accept(writer);
 
             return writer.toByteArray();
@@ -82,19 +86,23 @@ public class LifecycleListener implements AppLifecycleListener, Opcodes {
         return type.methods.stream().filter(method -> method.name.equals(name)).findAny().get();
     }
 
-    private static void returnEmptyListIfNoChecking(MethodNode method) {
+    private static InsnList ifNoChecking(FrameNode frame, Consumer<InsnList> action) {
         var insertion = new InsnList();
         var resume = new LabelNode();
         insertion.add(new VarInsnNode(ALOAD, 0));
-        insertion.add(new MethodInsnNode(INVOKESTATIC, Type.getInternalName(Uncheck.class), "disableChecking", "(Lcom/intellij/psi/PsiElement;)Z", false)); // I
+        insertion.add(new MethodInsnNode(INVOKESTATIC, Type.getInternalName(Uncheck.class), "disableChecking", "(Lcom/intellij/psi/PsiElement;)Z", false));
         insertion.add(new JumpInsnNode(IFEQ, resume));
-        insertion.add(new MethodInsnNode(INVOKESTATIC, Type.getInternalName(List.class), "of", "()Ljava/util/List;", true)); // List
-        insertion.add(new InsnNode(ARETURN));
+        action.accept(insertion);
         insertion.add(resume);
+        insertion.add(frame);
 
-        var parameterTypes = Stream.of(Type.getMethodType(method.desc).getArgumentTypes()).map(Type::getInternalName).toArray();
-        insertion.add(new FrameNode(F_FULL, parameterTypes.length, parameterTypes, 0, new Object[0]));
+        return insertion;
+    }
 
-        method.instructions.insertBefore(method.instructions.getFirst(), insertion);
+    private static void returnEmptyListIfNoChecking(MethodNode method) {
+        method.instructions.insertBefore(method.instructions.getFirst(), ifNoChecking(new FrameNode(F_SAME, 0, null, 0, null), i -> {
+            i.add(new MethodInsnNode(INVOKESTATIC, Type.getInternalName(List.class), "of", "()Ljava/util/List;", true));
+            i.add(new InsnNode(ARETURN));
+        }));
     }
 }
