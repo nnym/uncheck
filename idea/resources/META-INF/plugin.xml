@@ -30,7 +30,7 @@
     </description>
     <change-notes>
         <![CDATA[
-        The first statement of a constructor no longer has to be a constructor invocation.
+        Constructors that invoke throwing methods are no longer red.
         ]]>
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
