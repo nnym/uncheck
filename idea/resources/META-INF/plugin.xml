@@ -31,7 +31,7 @@
     </description>
     <change-notes>
         <![CDATA[
-        Fixed an error that arose from empty constructors.
+        Fixed a stack overflow from recursive constructor calls.
         ]]>
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
