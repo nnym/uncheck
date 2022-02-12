@@ -12,16 +12,20 @@ import com.intellij.codeInsight.daemon.impl.HighlightInfoType;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightControlFlowUtil;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.psi.PsiAssignmentExpression;
 import com.intellij.psi.PsiExpressionStatement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiUnaryExpression;
+import com.intellij.psi.impl.source.tree.ElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class HighlightFilter implements HighlightInfoFilter {
+    private static final String ID = "[.$\\w]+";
     private static final Map<Locale, Map<String, Pattern>> messages = new IdentityHashMap<>();
 
     @Override public boolean accept(@NotNull HighlightInfo info, @Nullable PsiFile file) {
@@ -31,11 +35,30 @@ public class HighlightFilter implements HighlightInfoFilter {
 
         if (info.type == HighlightInfoType.UNHANDLED_EXCEPTION
             || matches(info, "constructor.call.must.be.first.statement", "(this|super)\\(\\)")
-            || matches(info, "exception.never.thrown.try", "[.$\\w]+")) {
+            || matches(info, "exception.never.thrown.try", ID)
+            || matches(info, "resource.variable.must.be.final")
+            || matches(info, "guarded.pattern.variable.must.be.final")
+        ) {
             return false;
         }
 
-        if (!matches(info, "variable.not.initialized", "[.$\\w]+")) {
+        if (matches(info, "variable.must.be.final.or.effectively.final", ID) || matches(info, "lambda.variable.must.be.final")) {
+            var parent = file.findElementAt(info.getStartOffset()).getParent();
+            var grandparent = parent.getParent();
+
+            if (grandparent instanceof PsiAssignmentExpression && parent == ((PsiAssignmentExpression) grandparent).getLExpression()) {
+                return true;
+            }
+
+            if (grandparent instanceof PsiUnaryExpression) {
+                var unary = ((PsiUnaryExpression) grandparent).getOperationTokenType();
+                return unary == ElementType.PLUSPLUS || unary == ElementType.MINUSMINUS;
+            }
+
+            return false;
+        }
+
+        if (!matches(info, "variable.not.initialized", ID)) {
             return true;
         }
 
