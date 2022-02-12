@@ -9,10 +9,14 @@ The former modifies javac and the latter fixes the IDE's error reporting.
 Together these plugins enable code like
 ```java
 class Example {
-    Example(String a, String b) {}
+    final String a, b;
+
+    Example(String a, String b) {
+        this.a = a;
+        this.b = b;
+    }
 
     Example(String s) {
-        this.evilMethod();
         var ab = s.split(":");
         this(ab[0], ab[1]);
     }
