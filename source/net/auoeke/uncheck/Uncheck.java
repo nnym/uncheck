@@ -54,15 +54,14 @@ public class Uncheck implements Plugin, Opcodes {
     }
 
     @SneakyThrows
-    private static void disableFlow(Instrumentation instrumentation) {
+    private static void disableFlowAndCaptureAnalysis(Instrumentation instrumentation) {
         transform(instrumentation, Class.forName("com.sun.tools.javac.comp.Flow"), node -> {
             var analyzeTree = method(node, "analyzeTree");
             var instructions = analyzeTree.instructions;
 
             for (var instruction : instructions) {
-                if (instruction instanceof MethodInsnNode method && method.owner.endsWith("$FlowAnalyzer") && method.name.equals("analyzeTree")) {
+                if (instruction instanceof MethodInsnNode method && method.owner.matches(".+\\$(FlowAnalyzer|CaptureAnalyzer)$") && method.name.equals("analyzeTree")) {
                     instructions.remove(instruction);
-                    break;
                 }
             }
         });
@@ -85,7 +84,7 @@ public class Uncheck implements Plugin, Opcodes {
 
     static {
         var instrumentation = Objects.requireNonNullElseGet(Reflect.instrumentation(), ByteBuddyAgent::install);
-        disableFlow(instrumentation);
+        disableFlowAndCaptureAnalysis(instrumentation);
         allowNonConstructorFirstStatement(instrumentation);
     }
 }

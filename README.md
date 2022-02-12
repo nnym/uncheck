@@ -2,8 +2,9 @@ This project comprises a Java compiler plugin and an IntelliJ plugin.
 The former modifies javac and the latter fixes the IDE's error reporting.
 
 ### Features
-- No exception checking and
-- no restriction on the first statement of a constructor.
+- No exception checking,
+- no restriction on the first statement of a constructor and
+- reassigned variable usage in lambdas and inner classes.
 
 ### Example
 Together these plugins enable code like
@@ -12,8 +13,9 @@ class Example {
     final String a, b;
 
     Example(String a, String b) {
-        this.a = a;
+        this.a = a = "not effectively final";
         this.b = b;
+        Runnable r = () -> System.out.println(a);
     }
 
     Example(String s) {

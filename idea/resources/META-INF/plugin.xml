@@ -7,14 +7,15 @@
     <description>
         <![CDATA[
         The IDE side of <a href="https://git.auoeke.net/uncheck">uncheck</a>,
-         a Java plugin that disables exception checking and the requirement that the first statement of a constructor be a constructor invocation.
+         a Java plugin that disables exception checking and other bothersome restrictions.
         This IDE plugin only fixes error highlighting.
         <pre>class Example {
     final String a, b;
 
     Example(String a, String b) {
-        this.a = a;
+        this.a = a = "not effectively final";
         this.b = b;
+        Runnable r = () -> System.out.println(a);
     }
 
     Example(String s) {
@@ -30,7 +31,7 @@
     </description>
     <change-notes>
         <![CDATA[
-        Removed experimental API usage.
+        Lambda and inner class variables may be reassigned.
         ]]>
     </change-notes>
     <depends>com.intellij.modules.platform</depends>

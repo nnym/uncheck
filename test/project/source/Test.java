@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Predicate;
 import java.util.jar.JarFile;
 
 public class Test {
@@ -34,8 +35,9 @@ class Example {
     final String a, b;
 
     Example(String a, String b) {
-        this.a = a;
+        this.a = a = "not effectively final";
         this.b = b;
+        Runnable r = () -> System.out.println(a);
     }
 
     Example(String s) {
