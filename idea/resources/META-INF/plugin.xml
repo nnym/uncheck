@@ -31,7 +31,8 @@
     </description>
     <change-notes>
         <![CDATA[
-        Fixed a stack overflow from recursive constructor calls.
+        Removed an obsolete workaround for unhandled exception error suppression.
+        Fixed a bug that causes errors on unassigned final fields in classes without constructors to be suppressed.
         ]]>
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
