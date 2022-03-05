@@ -70,7 +70,13 @@ public class HighlightFilter implements HighlightInfoFilter {
         }
 
         var f = (PsiField) field;
-        return f.getModifierList().hasModifierProperty(PsiModifier.STATIC) || !Stream.of(f.getContainingClass().getConstructors()).allMatch(constructor -> initialized(constructor, f));
+
+        if (f.getModifierList().hasModifierProperty(PsiModifier.STATIC)) {
+            return true;
+        }
+
+        var constructors = f.getContainingClass().getConstructors();
+        return constructors.length == 0 || !Stream.of(constructors).allMatch(constructor -> initialized(constructor, f));
     }
 
     private static boolean matches(HighlightInfo info, String key, String... arguments) {
