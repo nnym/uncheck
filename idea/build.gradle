@@ -27,5 +27,5 @@ jar {
 }
 
 runIde {
-    dependsOn(rootProject.build)
+    jvmArgs("-Xmx4G")
 }
