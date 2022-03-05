@@ -3,7 +3,7 @@
     <name>Uncheck</name>
     <version>x</version>
     <vendor url="https://auoeke.net" email="me@auoeke.net">auoeke</vendor>
-    <idea-version since-build="213"/>
+    <idea-version since-build="221.4906.8"/>
     <description>
         <![CDATA[
         The IDE side of <a href="https://git.auoeke.net/uncheck">uncheck</a>,

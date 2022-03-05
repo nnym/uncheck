@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import com.intellij.codeInsight.daemon.JavaErrorBundle;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.codeInsight.daemon.impl.HighlightInfoFilter;
-import com.intellij.codeInsight.daemon.impl.HighlightInfoType;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightControlFlowUtil;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.module.ModuleUtil;
@@ -33,8 +32,7 @@ public class HighlightFilter implements HighlightInfoFilter {
             return true;
         }
 
-        if (info.type == HighlightInfoType.UNHANDLED_EXCEPTION
-            || matches(info, "constructor.call.must.be.first.statement", "(this|super)\\(\\)")
+        if (matches(info, "constructor.call.must.be.first.statement", "(this|super)\\(\\)")
             || matches(info, "exception.never.thrown.try", ID)
             || matches(info, "resource.variable.must.be.final")
             || matches(info, "guarded.pattern.variable.must.be.final")
