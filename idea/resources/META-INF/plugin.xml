@@ -31,7 +31,7 @@
     </description>
     <change-notes>
         <![CDATA[
-        Removed an obsolete workaround for unhandled exception error suppression.
+        Removed an obsolete workaround for unhandled exception error suppression.<br>
         Fixed a bug that causes errors on unassigned final fields in classes without constructors to be suppressed.
         ]]>
     </change-notes>
