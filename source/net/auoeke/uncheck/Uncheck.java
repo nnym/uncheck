@@ -7,6 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Method;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -150,12 +151,12 @@ public class Uncheck implements Plugin, Opcodes {
         return method.instructions;
     }
 
-    private static void print(Class<?> type, String method) {
+    private static void print(Method method) {
         var node = new ClassNode();
-        new ClassReader(Classes.classFile(type)).accept(node, 0);
+        new ClassReader(Classes.classFile(method.getDeclaringClass())).accept(node, 0);
 
         var visitor = new TraceMethodVisitor(new Textifier());
-        node.methods.stream().filter(m -> m.name.equals(method)).findAny().get().accept(visitor);
+        node.methods.stream().filter(m -> m.name.equals(method.getName()) && m.desc.equals(Type.getMethodDescriptor(method))).findAny().get().accept(visitor);
         var sw = new StringWriter();
         visitor.p.print(new PrintWriter(sw));
         System.err.print(sw);
@@ -214,7 +215,7 @@ public class Uncheck implements Plugin, Opcodes {
                 }
             });
 
-        print(Flow.AssignAnalyzer.class, "letInit");
+        print(Methods.of(Flow.AssignAnalyzer.class, "letInit", JCDiagnostic.DiagnosticPosition.class, Symbol.VarSymbol.class));
         util = Classes.load(loader, Util.NAME);
     }
 }
