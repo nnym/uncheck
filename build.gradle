@@ -16,13 +16,13 @@ sourceSets {
 
 compileJava {
     options.compilerArgs += [
-        "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-        "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-        "--add-exports", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-        "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-        "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-        "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
-    ]
+        "com.sun.tools.javac.api",
+        "com.sun.tools.javac.code",
+        "com.sun.tools.javac.comp",
+        "com.sun.tools.javac.processing",
+        "com.sun.tools.javac.tree",
+        "com.sun.tools.javac.util"
+    ].collectMany {["--add-exports", "jdk.compiler/$it=ALL-UNNAMED"]}
 }
 
 allprojects {
