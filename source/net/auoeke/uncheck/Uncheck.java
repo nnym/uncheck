@@ -1,13 +1,10 @@
 package net.auoeke.uncheck;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Method;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,8 +40,6 @@ import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
-import org.objectweb.asm.util.Textifier;
-import org.objectweb.asm.util.TraceMethodVisitor;
 
 public class Uncheck implements Plugin, Opcodes {
     private static final Instrumentation instrumentation = Reflect.instrument().value();
@@ -115,7 +110,7 @@ public class Uncheck implements Plugin, Opcodes {
                     builder.visitVarInsn(ALOAD, 2);
                     builder.visitVarInsn(ALOAD, 4);
                     builder.instructions.add(invoke(false, INVOKESTATIC, Util.INTERNAL_NAME, "allowFinalFieldReassignment", boolean.class, Symbol.VarSymbol.class, Env.class));
-                    builder.visitJumpInsn(IFNE, resume);
+                    builder.visitJumpInsn(IFEQ, resume);
                     builder.visitInsn(RETURN);
                     builder.visitLabel(resume);
                 }));
@@ -136,7 +131,7 @@ public class Uncheck implements Plugin, Opcodes {
                     builder.visitVarInsn(ALOAD, 1);
                     builder.visitVarInsn(ALOAD, 2);
                     builder.instructions.add(invoke(false, INVOKESTATIC, Util.INTERNAL_NAME, "allowFinalFieldReassignment", boolean.class, JCDiagnostic.DiagnosticPosition.class, Symbol.VarSymbol.class));
-                    builder.visitJumpInsn(IFNE, resume);
+                    builder.visitJumpInsn(IFEQ, resume);
                     builder.visitInsn(RETURN);
                     builder.visitLabel(resume);
                 }));
@@ -149,17 +144,6 @@ public class Uncheck implements Plugin, Opcodes {
         builder.accept(method);
 
         return method.instructions;
-    }
-
-    private static void print(Method method) {
-        var node = new ClassNode();
-        new ClassReader(Classes.classFile(method.getDeclaringClass())).accept(node, 0);
-
-        var visitor = new TraceMethodVisitor(new Textifier());
-        node.methods.stream().filter(m -> m.name.equals(method.getName()) && m.desc.equals(Type.getMethodDescriptor(method))).findAny().get().accept(visitor);
-        var sw = new StringWriter();
-        visitor.p.print(new PrintWriter(sw));
-        System.err.print(sw);
     }
 
     @Retention(RetentionPolicy.RUNTIME)
@@ -215,7 +199,6 @@ public class Uncheck implements Plugin, Opcodes {
                 }
             });
 
-        print(Methods.of(Flow.AssignAnalyzer.class, "letInit", JCDiagnostic.DiagnosticPosition.class, Symbol.VarSymbol.class));
         util = Classes.load(loader, Util.NAME);
     }
 }

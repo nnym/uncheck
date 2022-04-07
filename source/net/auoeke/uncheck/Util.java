@@ -25,10 +25,16 @@ public class Util {
     }
 
     public static boolean allowFinalFieldReassignment(JCDiagnostic.DiagnosticPosition position, Symbol.VarSymbol variable) {
-        return variable.getKind() == ElementKind.FIELD
-               && position.getTree() instanceof JCTree.JCIdent id
-               && id.sym == variable.enclClass()
-               && allowFinalFieldReassignment(trees.getPath(trees.getPath(variable).getCompilationUnit(), id), variable);
+        if (variable.getKind() == ElementKind.FIELD) {
+            var compilationUnit = trees.getPath(variable).getCompilationUnit();
+
+            // todo: account for constant folding
+            return !((JCTree.JCVariableDecl) trees.getTree(variable)).getInitializer().hasTag(JCTree.Tag.LITERAL)
+                && (position.getTree() instanceof JCTree.JCIdent id && id.sym.enclClass() == variable.enclClass() ? allowFinalFieldReassignment(trees.getPath(compilationUnit, id), variable)
+                : position.getTree() instanceof JCTree.JCFieldAccess field && field.sym.enclClass() == variable.enclClass() && allowFinalFieldReassignment(trees.getPath(compilationUnit, field), variable));
+        }
+
+        return false;
     }
 
     public static boolean allowFinalFieldReassignment(Symbol.VarSymbol variable, Env<AttrContext> env) {
