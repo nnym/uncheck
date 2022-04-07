@@ -3,9 +3,27 @@ plugins {
     id("maven-publish")
     id("gronk").version("latest.release")
     id("io.freefair.lombok").version("latest.release")
+    id("com.github.johnrengelman.shadow").version("latest.release")
 }
 
-version("0.2.0")
+version("0.3.0")
+
+sourceSets {
+    test {
+        java.srcDirs = ["test/project/source"]
+    }
+}
+
+compileJava {
+    options.compilerArgs += [
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+        "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+    ]
+}
 
 allprojects {
     plugins.with {
@@ -14,7 +32,6 @@ allprojects {
     }
 
     group("net.auoeke")
-
     javaVersion(17)
 
     repositories {
@@ -26,20 +43,27 @@ allprojects {
         from(rootProject.file("LICENSE")) {
             into("META-INF")
         }
+
+        manifest {
+            attributes("Specification-Version": project.version)
+        }
     }
 }
 
 dependencies {
-    implementation("org.ow2.asm:asm-tree")
-    implementation("net.bytebuddy:byte-buddy-agent")
     implementation("net.auoeke:reflect")
+    implementation("org.ow2.asm:asm-tree")
+    implementation("org.ow2.asm:asm-util")
 
+    testAnnotationProcessor(rootProject)
     testImplementation(gradleTestKit())
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 test {
+    dependsOn(publishToMavenLocal)
+
     mustRunAfter(clean)
     useJUnitPlatform()
 }

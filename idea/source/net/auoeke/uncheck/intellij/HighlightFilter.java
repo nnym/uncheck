@@ -20,63 +20,53 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiUnaryExpression;
 import com.intellij.psi.impl.source.tree.ElementType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class HighlightFilter implements HighlightInfoFilter {
     private static final String ID = "[.$\\w]+";
     private static final Map<Locale, Map<String, Pattern>> messages = new IdentityHashMap<>();
 
-    @Override public boolean accept(@NotNull HighlightInfo info, @Nullable PsiFile file) {
-        if (file == null || info.getSeverity().compareTo(HighlightSeverity.ERROR) < 0 || file.isWritable() && !Uncheck.disableChecking(ModuleUtil.findModuleForFile(file))) {
-            return true;
-        }
-
-        if (matches(info, "constructor.call.must.be.first.statement", "(this|super)\\(\\)")
-            || matches(info, "exception.never.thrown.try", ID)
-            || matches(info, "resource.variable.must.be.final")
-            || matches(info, "guarded.pattern.variable.must.be.final")
-        ) {
-            return false;
-        }
-
-        if (matches(info, "variable.must.be.final.or.effectively.final", ID) || matches(info, "lambda.variable.must.be.final")) {
-            var parent = file.findElementAt(info.getStartOffset()).getParent();
-            var grandparent = parent.getParent();
-
-            if (grandparent instanceof PsiAssignmentExpression && parent == ((PsiAssignmentExpression) grandparent).getLExpression()) {
-                return true;
+    @Override public boolean accept(HighlightInfo info, PsiFile file) {
+        if (info.getSeverity().compareTo(HighlightSeverity.ERROR) >= 0 && (file == null || !file.isWritable() || Uncheck.disableChecking(ModuleUtil.findModuleForFile(file)))) {
+            if (matches(info, "constructor.call.must.be.first.statement", "(this|super)\\(\\)")
+                || matches(info, "exception.never.thrown.try", ID)
+                || matches(info, "resource.variable.must.be.final")
+                || matches(info, "guarded.pattern.variable.must.be.final")
+            ) {
+                return false;
             }
 
-            if (grandparent instanceof PsiUnaryExpression) {
-                var unary = ((PsiUnaryExpression) grandparent).getOperationTokenType();
-                return unary == ElementType.PLUSPLUS || unary == ElementType.MINUSMINUS;
+            if (matches(info, "variable.must.be.final.or.effectively.final", ID) || matches(info, "lambda.variable.must.be.final")) {
+                var parent = file.findElementAt(info.getStartOffset()).getParent();
+                var grandparent = parent.getParent();
+
+                if (!(grandparent instanceof PsiAssignmentExpression) || parent != ((PsiAssignmentExpression) grandparent).getLExpression()) {
+                    if (grandparent instanceof PsiUnaryExpression) {
+                        var unary = ((PsiUnaryExpression) grandparent).getOperationTokenType();
+                        return unary == ElementType.PLUSPLUS || unary == ElementType.MINUSMINUS;
+                    }
+
+                    return false;
+                }
+            } else if (matches(info, "variable.not.initialized", ID)) {
+                var field = file.findElementAt(info.getStartOffset());
+
+                while (true) {
+                    if (field == null) return true;
+                    if (field instanceof PsiField) break;
+
+                    field = field.getParent();
+                }
+
+                var f = (PsiField) field;
+
+                if (!f.getModifierList().hasModifierProperty(PsiModifier.STATIC)) {
+                    var constructors = f.getContainingClass().getConstructors();
+                    return constructors.length == 0 || !Stream.of(constructors).allMatch(constructor -> initialized(constructor, f));
+                }
             }
-
-            return false;
         }
 
-        if (!matches(info, "variable.not.initialized", ID)) {
-            return true;
-        }
-
-        var field = file.findElementAt(info.getStartOffset());
-
-        while (true) {
-            if (field == null) return true;
-            if (field instanceof PsiField) break;
-
-            field = field.getParent();
-        }
-
-        var f = (PsiField) field;
-
-        if (f.getModifierList().hasModifierProperty(PsiModifier.STATIC)) {
-            return true;
-        }
-
-        var constructors = f.getContainingClass().getConstructors();
-        return constructors.length == 0 || !Stream.of(constructors).allMatch(constructor -> initialized(constructor, f));
+        return true;
     }
 
     private static boolean matches(HighlightInfo info, String key, String... arguments) {

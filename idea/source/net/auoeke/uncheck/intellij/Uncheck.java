@@ -11,8 +11,13 @@ import com.intellij.psi.PsiElement;
 public class Uncheck {
     public static boolean disableChecking(Module module) {
         return module != null && Stream.of(CompilerConfiguration.getInstance(module.getProject()).getAnnotationProcessingConfiguration(module).getProcessorPath().split(File.pathSeparator))
-            .filter(path -> path.endsWith(".jar"))
-            .anyMatch(path -> new JarFile(path).getEntry("net.auoeke.uncheck") != null);
+            .map(File::new)
+            .filter(path -> path.exists() && path.getName().endsWith(".jar"))
+            .anyMatch(jar -> {
+                try (var file = new JarFile(jar)) {
+                    return file.getEntry("net.auoeke.uncheck") != null;
+                }
+            });
     }
 
     public static boolean disableChecking(PsiElement element) {
