@@ -5,6 +5,6 @@ import org.junit.jupiter.api.Test;
 class UncheckTest {
     @Test
     void test() {
-        GradleRunner.create().withProjectDir(new File("test/project")).withArguments("-s", "clean", "compileJava").forwardOutput().build();
+        GradleRunner.create().withProjectDir(new File("test/project")).withArguments("-s", "clean", "compileJava").forwardOutput().withDebug(true).build();
     }
 }
