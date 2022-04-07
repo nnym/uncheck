@@ -27,9 +27,10 @@ public class Util {
     public static boolean allowFinalFieldReassignment(JCDiagnostic.DiagnosticPosition position, Symbol.VarSymbol variable) {
         if (variable.getKind() == ElementKind.FIELD) {
             var compilationUnit = trees.getPath(variable).getCompilationUnit();
+            var initializer = ((JCTree.JCVariableDecl) trees.getTree(variable)).getInitializer();
 
             // todo: account for constant folding
-            return !((JCTree.JCVariableDecl) trees.getTree(variable)).getInitializer().hasTag(JCTree.Tag.LITERAL)
+            return (initializer == null || !initializer.hasTag(JCTree.Tag.LITERAL))
                 && (position.getTree() instanceof JCTree.JCIdent id && id.sym.enclClass() == variable.enclClass() ? allowFinalFieldReassignment(trees.getPath(compilationUnit, id), variable)
                 : position.getTree() instanceof JCTree.JCFieldAccess field && field.sym.enclClass() == variable.enclClass() && allowFinalFieldReassignment(trees.getPath(compilationUnit, field), variable));
         }
