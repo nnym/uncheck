@@ -1,39 +1,49 @@
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.jar.JarFile;
 import sun.misc.Unsafe;
 
 public class Test {
     static final Unsafe U = (Unsafe) MethodHandles.privateLookupIn(Unsafe.class, MethodHandles.lookup()).findStaticVarHandle(Unsafe.class, "theUnsafe", Unsafe.class).get();
     static final Object U1 = U = (Unsafe) U.getObject(Unsafe.class, U.staticFieldOffset(Unsafe.class.getDeclaredField("theUnsafe")));
-    static final JarFile O = new JarFile("");
+    static final Field field = Test.class.getDeclaredField("U");
     static final int a;
-    final int i = 12;
 
     public Test() {
-        System.out.println("pre-Object::new");
+        log("pre-Object::new");
         super();
-        System.out.println("post-Object::new");
-        this.i = 14;
+        log("post-Object::new");
     }
 
     public static void main(String... args) {
         evilMethod("output.txt", "I know what I'm doing.");
+        new Test();
     }
 
     public static void evilMethod(String file, String contents) {
         Files.writeString(Path.of(file), contents);
     }
 
+    private static void log(Object output) {
+        System.out.println(output);
+    }
+
     static {
+        // todo: should not be allowed; fix
         Runnable r = () -> a = 3;
-        O = null;
+
+        log(field);
+        field = null;
+        log(field);
+
         a = 0;
+        log(a);
 
         for (var b = 0; b < 3; b++) {
-            // a += b;
+            a += b;
+            log(a);
         }
     }
 }
