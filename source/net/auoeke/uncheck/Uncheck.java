@@ -1,6 +1,7 @@
 package net.auoeke.uncheck;
 
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -155,7 +156,9 @@ public class Uncheck implements Plugin, Opcodes {
 
         var visitor = new TraceMethodVisitor(new Textifier());
         node.methods.stream().filter(m -> m.name.equals(method)).findAny().get().accept(visitor);
-        visitor.p.print(new PrintWriter(System.err, true));
+        var sw = new StringWriter();
+        visitor.p.print(new PrintWriter(sw));
+        System.err.print(sw);
     }
 
     @Retention(RetentionPolicy.RUNTIME)
@@ -171,8 +174,6 @@ public class Uncheck implements Plugin, Opcodes {
         if (Classes.findLoadedClass(loader, Util.NAME) == null) {
             ClassDefiner.make().loader(loader).classFile(Util.INTERNAL_NAME).define();
         }
-
-        print(Flow.AssignAnalyzer.class, "letInit");
 
         Methods.of(Uncheck.class)
             .filter(method -> method.isAnnotationPresent(Transform.class))
