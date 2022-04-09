@@ -38,16 +38,20 @@ allprojects {
         mavenCentral()
         maven("maven.auoeke.net")
     }
+}
 
-    jar {
-        from(rootProject.file("LICENSE")) {
-            into("META-INF")
-        }
-
-        manifest {
-            attributes("Specification-Version": project.version)
-        }
+tasks.withType(Jar) {
+    from(rootProject.file("LICENSE")) {
+        into("META-INF")
     }
+
+    manifest {
+        attributes("Specification-Version": project.version)
+    }
+}
+
+assemble {
+    dependsOn(shadowJar)
 }
 
 dependencies {
