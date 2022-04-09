@@ -41,23 +41,27 @@ allprojects {
 }
 
 tasks.withType(Jar) {
-    from(rootProject.file("LICENSE")) {
+    from(file("LICENSE")) {
         into("META-INF")
     }
 
-    manifest {
-        attributes("Specification-Version": project.version)
-    }
+    manifest.attributes(
+        "Specification-Title": project.name,
+        "Specification-Version": project.version
+    )
 }
 
-assemble {
-    dependsOn(shadowJar)
+shadowJar {
+    assemble.dependsOn(it)
+
+    mergeManifests {
+        include {manifest.mainAttributes.getValue("Specification-Title") == "reflect"}
+    }
 }
 
 dependencies {
     implementation("net.auoeke:reflect")
     implementation("org.ow2.asm:asm-tree")
-    implementation("org.ow2.asm:asm-util")
 
     testAnnotationProcessor(rootProject)
     testImplementation(gradleTestKit())
