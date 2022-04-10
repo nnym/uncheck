@@ -55,6 +55,7 @@ class Example {
         this.a = a = "not effectively final";
         this.b = b;
         Runnable r = () -> System.out.println(a);
+        Runnable incompatibleThrownTypes = Thread.currentThread()::join;
     }
 
     Example(String s) {
