@@ -5,6 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.instrument.Instrumentation;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -74,16 +75,21 @@ public class Uncheck implements Plugin, Opcodes {
         return type.methods.stream().filter(method -> method.name.equals(name)).findAny().get();
     }
 
-    @Transform(Flow.class)
-    private static void disableFlowAndCaptureAnalysis(ClassNode node) {
+    @Transform(name = {"com.sun.tools.javac.comp.Flow$CaptureAnalyzer", "com.sun.tools.javac.comp.Flow$FlowAnalyzer"})
+    private static void disableCaptureAndFlowAnalyzers(ClassNode node) {
         var analyzeTree = method(node, "analyzeTree");
-        var instructions = analyzeTree.instructions;
+        analyzeTree.instructions.clear();
+        analyzeTree.tryCatchBlocks.clear();
+        analyzeTree.visitInsn(RETURN);
+    }
 
-        for (var instruction : instructions) {
-            if (instruction instanceof MethodInsnNode method && method.owner.matches(".+\\$(FlowAnalyzer|CaptureAnalyzer)$") && method.name.equals("analyzeTree")) {
-                instructions.remove(instruction);
-            }
-        }
+    @Transform(Attr.class)
+    private static void acceptMethodReferencesWithIncompatibleThrownTypes(ClassNode node) {
+        var checkReferenceCompatible = method(node, "checkReferenceCompatible");
+        checkReferenceCompatible.instructions.insertBefore(checkReferenceCompatible.instructions.getFirst(), buildList(builder -> {
+            builder.visitInsn(ICONST_1);
+            builder.visitVarInsn(ISTORE, 5);
+        }));
     }
 
     @Transform(Attr.class)
@@ -121,7 +127,7 @@ public class Uncheck implements Plugin, Opcodes {
     }
 
     @Transform(Flow.AssignAnalyzer.class)
-    private static void allowUnknownFinalFieldAssignment(ClassNode node) {
+    private static void allowPossiblyAssignedFinalFieldAssignment(ClassNode node) {
         var letInit = node.methods.stream().filter(method -> method.name.equals("letInit") && method.desc.contains(";L")).findAny().get();
 
         for (var instruction : letInit.instructions) {
@@ -148,8 +154,9 @@ public class Uncheck implements Plugin, Opcodes {
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
-    @interface Transform {
-        Class<?> value();
+    private @interface Transform {
+        Class<?> value() default Uncheck.class;
+        String[] name() default {};
     }
 
     static {
@@ -162,7 +169,12 @@ public class Uncheck implements Plugin, Opcodes {
 
         Methods.of(Uncheck.class)
             .filter(method -> method.isAnnotationPresent(Transform.class))
-            .collect(Collectors.groupingBy(method -> method.getAnnotation(Transform.class).value()))
+            .flatMap(method -> {
+                var transform = method.getAnnotation(Transform.class);
+                //noinspection Convert2MethodRef
+                return (transform.name().length == 0 ? Stream.of(transform.value()) : Stream.of(transform.name()).map(name -> Classes.load(name))).map(type -> Map.entry(type, method));
+            })
+            .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())))
             .forEach((target, methods) -> {
                 ClassTransformer transformer = (module, __, name, type, domain, bytes) -> {
                     if (type != target) {
