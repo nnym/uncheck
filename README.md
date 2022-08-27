@@ -1,13 +1,13 @@
 This project comprises a Java compiler plugin and an IntelliJ plugin.
 The former modifies javac and the latter fixes the IDE's error reporting.
 
-### Features
-- No exception checking,
-- no restriction on the first statement of a constructor and
+## Features
+- No exception checking
+- no restriction on the first statement of a constructor
 - reassigned variable usage in lambdas and inner classes.
 
-### Example
-Together these plugins enable code like
+## Example
+These plugins extend Java to make the following example legal.
 ```java
 class Example {
     final String a, b;
@@ -16,6 +16,7 @@ class Example {
         this.a = a = "not effectively final";
         this.b = b;
         Runnable r = () -> System.out.println(a);
+        Runnable incompatibleThrownTypes = Thread.currentThread()::join;
     }
 
     Example(String s) {
@@ -29,17 +30,16 @@ class Example {
     }
 }
 ```
-to be compiled successfully.
 
-### Using the IntelliJ plugin
-#### [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/18575-uncheck)
-#### [GitHub release](https://github.com/auoeke/uncheck/releases)
+## Using the IntelliJ plugin
+### [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/18575-uncheck)
+### [GitHub release](https://github.com/auoeke/uncheck/releases)
 Download and [install manually](https://www.jetbrains.com/help/idea/managing-plugins.html#install_plugin_from_disk).
 
-### Using the compiler plugin
-It currently requires Java 17 or later and is hosted as `net.auoeke:uncheck` at https://maven.auoeke.net.
+## Using the compiler plugin
+It requires Java 17 or later and is hosted as `net.auoeke:uncheck` at https://maven.auoeke.net.
 
-#### Gradle
+### Gradle
 ```groovy
 repositories {
     maven {url = "https://maven.auoeke.net"}
