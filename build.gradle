@@ -74,3 +74,12 @@ test {
     mustRunAfter(clean)
     useJUnitPlatform()
 }
+
+publishing {
+    repositories {
+        maven("maven.auoeke.net") {
+            username(systemProperty("maven.username"))
+            password(systemProperty("maven.password"))
+        }
+    }
+}
