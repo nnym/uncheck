@@ -1,7 +1,6 @@
 pluginManagement {
     repositories {
         mavenCentral()
-        gradlePluginPortal()
         maven {url = "https://maven.auoeke.net"}
     }
 }
