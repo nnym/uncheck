@@ -20,6 +20,7 @@ public class Test {
     public static void main(String... args) {
         evilMethod("output.txt", "I know what I'm doing.");
         new Test();
+        System.out.println("Test.a = " + a);
     }
 
     public static void evilMethod(String file, String contents) {
@@ -33,6 +34,7 @@ public class Test {
     static {
         // todo: should not be allowed; fix
         Runnable r = () -> a = 3;
+        r.run();
 
         log(field);
         field = null;
@@ -41,7 +43,7 @@ public class Test {
         a = 0;
         log(a);
 
-        for (var b = 0; b < 3; b++) {
+        for (var b = 0; b < 5; b++) {
             a += b;
             log(a);
         }
