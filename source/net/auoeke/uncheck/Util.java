@@ -3,6 +3,7 @@ package net.auoeke.uncheck;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.Plugin;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTrees;
@@ -54,6 +55,12 @@ public class Util {
             if (leaf instanceof JCTree.JCVariableDecl field) return field.getModifiers().getFlags().contains(Modifier.STATIC) == variable.isStatic();
 
             path = path.getParentPath();
+        }
+    }
+
+    static {
+        if (Util.class.getClassLoader() != Plugin.class.getClassLoader()) {
+            throw new IllegalStateException("Util must be loaded by javac's class loader");
         }
     }
 }
