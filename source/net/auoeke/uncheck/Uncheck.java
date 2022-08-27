@@ -1,9 +1,5 @@
 package net.auoeke.uncheck;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.instrument.Instrumentation;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -55,12 +51,15 @@ public class Uncheck implements Plugin, Opcodes {
         var context = ((BasicJavacTask) task).getContext();
         Invoker.findStatic(util, "context", void.class, Context.class).invoke(context);
 
-        try {
-            JavacProcessingEnvironment.instance(context).getMessager().printMessage(Diagnostic.Kind.NOTE, "uncheck version %s: %s".formatted(
+        var location = Classes.location(Uncheck.class);
+
+        if (location != null && Boolean.getBoolean("uncheck.debug")) {
+            JavacProcessingEnvironment.instance(context).getMessager().printMessage(Diagnostic.Kind.NOTE, "uncheck %s: %s; modified %tF %3$tT".formatted(
                 Uncheck.class.getPackage().getSpecificationVersion(),
-                Uncheck.class.getProtectionDomain().getCodeSource().getLocation()
+                location.getFile(),
+                location.openConnection().getLastModified()
             ));
-        } catch (NullPointerException no) {}
+        }
     }
 
     @Override public boolean autoStart() {
@@ -152,13 +151,6 @@ public class Uncheck implements Plugin, Opcodes {
         return method.instructions;
     }
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    private @interface Transform {
-        Class<?> value() default Uncheck.class;
-        String[] name() default {};
-    }
-
     static {
         Modules.open(Plugin.class.getModule());
         var loader = Plugin.class.getClassLoader();
@@ -166,6 +158,8 @@ public class Uncheck implements Plugin, Opcodes {
         if (Classes.findLoadedClass(loader, Util.NAME) == null) {
             ClassDefiner.make().loader(loader).classFile(Util.INTERNAL_NAME).define();
         }
+
+        util = Classes.load(loader, Util.NAME);
 
         Methods.of(Uncheck.class)
             .filter(method -> method.isAnnotationPresent(Transform.class))
@@ -210,7 +204,5 @@ public class Uncheck implements Plugin, Opcodes {
                     instrumentation.removeTransformer(transformer);
                 }
             });
-
-        util = Classes.load(loader, Util.NAME);
     }
 }
