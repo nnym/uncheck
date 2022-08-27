@@ -25,6 +25,7 @@ public class Util {
         trees = JavacTrees.instance(context);
     }
 
+    // VarMightAlreadyBeAssigned
     public static boolean allowFinalFieldReassignment(JCDiagnostic.DiagnosticPosition position, Symbol.VarSymbol variable) {
         if (variable.getKind() == ElementKind.FIELD) {
             var compilationUnit = trees.getPath(variable).getCompilationUnit();
@@ -39,6 +40,7 @@ public class Util {
         return false;
     }
 
+    // CantAssignValToFinalVar
     public static boolean allowFinalFieldReassignment(Symbol.VarSymbol variable, Env<AttrContext> env) {
         return variable.getKind() == ElementKind.FIELD
             && env.enclClass.sym == variable.enclClass()
