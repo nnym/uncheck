@@ -32,9 +32,9 @@ class Example {
 ```
 
 ## Using the IntelliJ plugin
-### [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/18575-uncheck)
-### [GitHub release](https://github.com/auoeke/uncheck/releases)
-Download and [install manually](https://www.jetbrains.com/help/idea/managing-plugins.html#install_plugin_from_disk).
+[JetBrains Marketplace](https://plugins.jetbrains.com/plugin/18575-uncheck)
+
+[GitHub releases](https://github.com/auoeke/uncheck/releases): download and [install manually](https://www.jetbrains.com/help/idea/managing-plugins.html#install_plugin_from_disk)
 
 ## Using the compiler plugin
 It requires Java 17 or later and is hosted as `net.auoeke:uncheck` at https://maven.auoeke.net.
