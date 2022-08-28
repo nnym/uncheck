@@ -18,13 +18,8 @@ public class Test {
     }
 
     public static void main(String... args) {
-        evilMethod("output.txt", "I know what I'm doing.");
         new Test();
-        System.out.println("Test.a = " + a);
-    }
-
-    public static void evilMethod(String file, String contents) {
-        Files.writeString(Path.of(file), contents);
+        log("Test.a = " + a);
     }
 
     private static void log(Object output) {
