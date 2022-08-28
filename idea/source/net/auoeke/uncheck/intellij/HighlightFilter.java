@@ -76,7 +76,7 @@ public class HighlightFilter implements HighlightInfoFilter {
 
                     element = element.getParent();
                 }
-            } else if (matches(info, "assignment.to.final.variable", ID) || matches(info, "variable.already.assigned", ID)) {
+            } else if (matches(info, "assignment.to.final.variable", ID) || matches(info, "variable.already.assigned", ID) /*|| matches(info, "variable.assigned.in.loop", ID)*/) {
                 if (file == null) {
                     return false;
                 }
@@ -96,13 +96,6 @@ public class HighlightFilter implements HighlightInfoFilter {
         return true;
     }
 
-    private static boolean matches(HighlightInfo info, String key, String... arguments) {
-        return messages.computeIfAbsent(JavaErrorBundle.getLocale(), l -> new IdentityHashMap<>())
-            .computeIfAbsent(key, k -> Pattern.compile(JavaErrorBundle.message(k, arguments)))
-            .matcher(info.getDescription())
-            .matches();
-    }
-
     private static boolean initialized(PsiMethod constructor, PsiField field) {
         if (constructor == null || constructor.getBody() == null) {
             return false;
@@ -116,5 +109,12 @@ public class HighlightFilter implements HighlightInfoFilter {
                    .map(call -> ((PsiMethodCallExpression) call).resolveMethod())
                    .filter(c -> c != constructor)
                    .anyMatch(c -> initialized(c, field));
+    }
+
+    private static boolean matches(HighlightInfo info, String key, String... arguments) {
+        return messages.computeIfAbsent(JavaErrorBundle.getLocale(), l -> new IdentityHashMap<>())
+            .computeIfAbsent(key, k -> Pattern.compile(JavaErrorBundle.message(k, arguments)))
+            .matcher(info.getDescription())
+            .matches();
     }
 }
