@@ -153,13 +153,10 @@ public class Uncheck implements Plugin, Opcodes {
 
     static {
         Modules.open(Plugin.class.getModule());
+
         var loader = Plugin.class.getClassLoader();
-
-        if (Classes.findLoadedClass(loader, Util.NAME) == null) {
-            ClassDefiner.make().loader(loader).classFile(Util.INTERNAL_NAME).define();
-        }
-
-        util = Classes.load(loader, Util.NAME);
+        var u = Classes.load(loader, Util.NAME);
+        util = u == null ? ClassDefiner.make().loader(loader).classFile(Util.INTERNAL_NAME).define() : u;
 
         Methods.of(Uncheck.class)
             .filter(method -> method.isAnnotationPresent(Transform.class))
