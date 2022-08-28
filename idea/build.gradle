@@ -28,3 +28,7 @@ jar {
 runIde {
     jvmArgs("-Xmx4G")
 }
+
+publishPlugin {
+    token.set(systemProperty("intellij.token"))
+}
