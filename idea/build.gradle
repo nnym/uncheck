@@ -2,8 +2,7 @@ plugins {
     id("org.jetbrains.intellij").version("latest.integration")
 }
 
-version("0.2.3")
-javaVersion(11)
+version("0.3.0")
 
 sourceSets {
     main {

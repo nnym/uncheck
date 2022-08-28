@@ -2,9 +2,10 @@ This project comprises a Java compiler plugin and an IntelliJ plugin.
 The former modifies javac and the latter fixes the IDE's error reporting.
 
 ## Features
-- No exception checking
+- no exception checking
 - no restriction on the first statement of a constructor
-- reassigned variable usage in lambdas and inner classes.
+- reassigned variable usage in lambdas and inner classes
+- final field reassignment in initializers
 
 ## Example
 These plugins extend Java to make the following example legal.
