@@ -51,4 +51,4 @@ dependencies {
 }
 ```
 
-![](idea/resources/icon.png)
+<img width="256" src="intellij/resources/META-INF/pluginIcon.svg">
