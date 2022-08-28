@@ -16,8 +16,8 @@ class Example {
     Example(String a, String b) {
         this.a = a = "not effectively final";
         this.b = b;
-        Runnable r = () -> System.out.println(a);
-        Runnable incompatibleThrownTypes = Thread.currentThread()::join;
+        Runnable capturingRunnable = () -> System.out.println(a);
+        Runnable throwingRunnable = Thread.currentThread()::join;
     }
 
     Example(String s) {
