@@ -32,15 +32,13 @@ public class Test {
     }
 
     static {
-        // todo: should not be allowed; fix
-        Runnable r = () -> a = 3;
-        r.run();
-
         log(field);
         field = null;
+        Test.field = null;
         log(field);
 
         a = 0;
+        a = 1;
         log(a);
 
         for (var b = 0; b < 5; b++) {

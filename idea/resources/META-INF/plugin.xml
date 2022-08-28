@@ -3,11 +3,11 @@
     <name>Uncheck</name>
     <version>x</version>
     <vendor url="https://auoeke.net" email="me@auoeke.net">auoeke</vendor>
-    <idea-version since-build="221.4906.8"/>
+    <idea-version since-build="222.3739.54"/>
     <description>
         <![CDATA[
         The IDE side of <a href="https://git.auoeke.net/uncheck">uncheck</a>,
-         a Java plugin that disables exception checking and other bothersome restrictions.
+        a Java plugin that disables exception checking and other bothersome restrictions.
         This IDE plugin only fixes error highlighting.
         <pre>class Example {
     final String a, b;
@@ -31,8 +31,8 @@
     </description>
     <change-notes>
         <![CDATA[
-        Removed an obsolete workaround for unhandled exception error suppression.<br>
-        Fixed a bug that causes errors on unassigned final fields in classes without constructors to be suppressed.
+        Fixed a bug that causes errors on unassigned final fields in classes without constructors to be suppressed.<br>
+        Implemented final field multiple assignment in initializers.
         ]]>
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
