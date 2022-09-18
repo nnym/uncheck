@@ -1,17 +1,22 @@
 plugins {
     id("java")
     id("maven-publish")
-    id("gronk").version("latest.release")
-    id("io.freefair.lombok").version("latest.release")
+    id("signing")
+    id("net.auoeke.gronk").version("latest.release")
     id("com.github.johnrengelman.shadow").version("latest.release")
 }
 
+final fatName = name + "-all"
+final exports = file("exports.options")
+
 version("0.3.4")
+description("a javac plugin that disables exception checking and other bothersome restrictions")
+url("https://github.com/auoeke/uncheck")
 
 allprojects {
     plugins.with {
         apply("java")
-        apply("gronk")
+        apply("net.auoeke.gronk")
     }
 
     group("net.auoeke")
@@ -19,7 +24,6 @@ allprojects {
 
     repositories {
         mavenCentral()
-        maven("maven.auoeke.net")
     }
 }
 
@@ -29,15 +33,33 @@ sourceSets {
     }
 }
 
+repositories {
+    maven("maven.auoeke.net")
+}
+
+dependencies {
+    annotationProcessor("net.auoeke:uncheck-all")
+    implementation("net.auoeke:reflect")
+    implementation("org.ow2.asm:asm-tree")
+
+    testAnnotationProcessor(rootProject)
+    testImplementation(gradleTestKit())
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+java {
+    withJavadocJar()
+}
+
 compileJava {
-    options.compilerArgs += [
-        "com.sun.tools.javac.api",
-        "com.sun.tools.javac.code",
-        "com.sun.tools.javac.comp",
-        "com.sun.tools.javac.processing",
-        "com.sun.tools.javac.tree",
-        "com.sun.tools.javac.util"
-    ].collectMany {["--add-exports", "jdk.compiler/$it=ALL-UNNAMED"]}
+    options.compilerArgs += exports.readLines().collectMany {it.split(" ").toList()}
+}
+
+javadoc {
+    options {
+        optionFiles(exports)
+    }
 }
 
 tasks.withType(Jar) {
@@ -58,18 +80,8 @@ shadowJar {
         include {manifest.mainAttributes.getValue("Specification-Title") == "reflect"}
     }
 
-    archiveBaseName.set(project.name + "-all")
+    archiveBaseName.set(fatName)
     archiveClassifier.set(null)
-}
-
-dependencies {
-    implementation("net.auoeke:reflect")
-    implementation("org.ow2.asm:asm-tree")
-
-    testAnnotationProcessor(rootProject)
-    testImplementation(gradleTestKit())
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 test {
@@ -81,15 +93,15 @@ test {
 components.java {
     withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
         // Exclude the fat JAR from the main publication.
-        skip();
+        skip()
     }
 }
 
 publishing {
     repositories {
-        maven("maven.auoeke.net") {
-            username(findProperty("maven.username"))
-            password(findProperty("maven.password"))
+        maven("s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+            username(findProperty("ossrh.id"))
+            password(findProperty("ossrh.password"))
         }
     }
 
@@ -102,8 +114,35 @@ publishing {
             shadow.component(fat)
 
             groupId(project.group)
-            artifactId(project.name + "-all")
+            artifactId(fatName)
             version(project.version)
+
+            artifact(sourcesJar)
+            artifact(javadocJar)
+        }
+    }
+
+    publications.withType(MavenPublication) {MavenPublication publication ->
+        publication.pom {
+            licenses {
+                license {
+                    name.set("MIT")
+                    url.set("https://opensource.org/licenses/MIT")
+                }
+            }
+
+            developers {
+                developer {
+                    id.set("auoeke")
+                    email.set("me@auoeke.net")
+                }
+            }
+
+            scm {
+                connection.set("scm:git:git://github.com/auoeke/uncheck.git")
+                developerConnection.set("scm:git:git://github.com/auoeke/uncheck.git")
+                url.set("https://github.com/auoeke/uncheck/tree/master")
+            }
         }
     }
 }
