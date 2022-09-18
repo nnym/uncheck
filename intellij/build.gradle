@@ -30,5 +30,5 @@ runIde {
 }
 
 publishPlugin {
-    token.set(systemProperty("intellij.token"))
+    token.set(findProperty("intellij.token"))
 }
