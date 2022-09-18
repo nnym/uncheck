@@ -31,7 +31,7 @@ public class HighlightFilter implements HighlightInfoFilter {
     private static final Map<Locale, Map<String, Pattern>> messages = new IdentityHashMap<>();
 
     @Override public boolean accept(HighlightInfo info, PsiFile file) {
-        if (info.getSeverity().compareTo(HighlightSeverity.ERROR) >= 0 && (file == null || !file.isWritable() || Uncheck.enable(ModuleUtil.findModuleForFile(file)))) {
+        if (file != null && info.getSeverity().compareTo(HighlightSeverity.ERROR) >= 0 && (!file.isWritable() || Uncheck.enable(ModuleUtil.findModuleForFile(file)))) {
             if (info.type == HighlightInfoType.UNHANDLED_EXCEPTION
                 || matches(info, "constructor.call.must.be.first.statement", "(this|super)\\(\\)")
                 || matches(info, "exception.never.thrown.try", ID)
@@ -41,13 +41,9 @@ public class HighlightFilter implements HighlightInfoFilter {
                 return false;
             }
 
-            var element = file == null ? null : file.findElementAt(info.getStartOffset());
+            var element = file.findElementAt(info.getStartOffset());
 
             if (matches(info, "variable.must.be.final.or.effectively.final", ID) || matches(info, "lambda.variable.must.be.final")) {
-                if (file == null) {
-                    return false;
-                }
-
                 var parent = element.getParent();
                 var grandparent = parent.getParent();
 
@@ -77,10 +73,6 @@ public class HighlightFilter implements HighlightInfoFilter {
                     element = element.getParent();
                 }
             } else if (matches(info, "assignment.to.final.variable", ID) || matches(info, "variable.already.assigned", ID) /*|| matches(info, "variable.assigned.in.loop", ID)*/) {
-                if (file == null) {
-                    return false;
-                }
-
                 var initializer = PsiUtil.findEnclosingConstructorOrInitializer(element);
                 var parent = element.getParent();
                 var declaration = parent.getParent() instanceof PsiReference reference ? reference.resolve() : ((PsiReference) parent).resolve();
