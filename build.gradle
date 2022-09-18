@@ -28,10 +28,6 @@ sourceSets {
     }
 }
 
-repositories {
-    maven("maven.auoeke.net")
-}
-
 dependencies {
     annotationProcessor("net.auoeke:uncheck-all")
     implementation("net.auoeke:reflect")
