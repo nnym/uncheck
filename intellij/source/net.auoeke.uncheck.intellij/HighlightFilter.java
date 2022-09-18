@@ -12,7 +12,6 @@ import com.intellij.codeInsight.daemon.impl.HighlightInfoType;
 import com.intellij.codeInsight.daemon.impl.analysis.HighlightControlFlowUtil;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.lang.jvm.JvmModifier;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.psi.LambdaUtil;
 import com.intellij.psi.PsiAssignmentExpression;
 import com.intellij.psi.PsiExpressionStatement;
@@ -31,7 +30,7 @@ public class HighlightFilter implements HighlightInfoFilter {
     private static final Map<Locale, Map<String, Pattern>> messages = new IdentityHashMap<>();
 
     @Override public boolean accept(HighlightInfo info, PsiFile file) {
-        if (file != null && info.getSeverity().compareTo(HighlightSeverity.ERROR) >= 0 && (!file.isWritable() || Uncheck.enable(ModuleUtil.findModuleForFile(file)))) {
+        if (info.getSeverity().compareTo(HighlightSeverity.ERROR) >= 0 && Uncheck.enable(file)) {
             if (info.type == HighlightInfoType.UNHANDLED_EXCEPTION
                 || matches(info, "constructor.call.must.be.first.statement", "(this|super)\\(\\)")
                 || matches(info, "exception.never.thrown.try", ID)
