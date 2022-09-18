@@ -11,7 +11,6 @@ sourceSets {
 repositories {
     mavenCentral()
     mavenLocal()
-    maven {url = "https://maven.auoeke.net"}
 }
 
 dependencies {
