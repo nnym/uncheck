@@ -57,6 +57,9 @@ shadowJar {
     mergeManifests {
         include {manifest.mainAttributes.getValue("Specification-Title") == "reflect"}
     }
+
+    archiveBaseName.set(project.name + "-all")
+    archiveClassifier.set(null)
 }
 
 dependencies {
@@ -75,11 +78,32 @@ test {
     useJUnitPlatform()
 }
 
+components.java {
+    withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
+        // Exclude the fat JAR from the main publication.
+        skip();
+    }
+}
+
 publishing {
     repositories {
         maven("maven.auoeke.net") {
-            username(systemProperty("maven.username"))
-            password(systemProperty("maven.password"))
+            username(findProperty("maven.username"))
+            password(findProperty("maven.password"))
+        }
+    }
+
+    publications {
+        main(MavenPublication) {
+            from(components.java)
+        }
+
+        fat(MavenPublication) {
+            shadow.component(fat)
+
+            groupId(project.group)
+            artifactId(project.name + "-all")
+            version(project.version)
         }
     }
 }
