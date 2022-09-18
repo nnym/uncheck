@@ -23,7 +23,6 @@ import net.auoeke.reflect.Invoker;
 import net.auoeke.reflect.Methods;
 import net.auoeke.reflect.Modules;
 import net.auoeke.reflect.Reflect;
-import net.gudenau.lib.unsafe.Unsafe;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -185,7 +184,7 @@ public class Uncheck implements Plugin, Opcodes {
                     } catch (Throwable trouble) {
                         trouble.printStackTrace();
 
-                        throw Unsafe.throwException(trouble);
+                        throw trouble;
                     }
                 };
 
@@ -193,8 +192,6 @@ public class Uncheck implements Plugin, Opcodes {
 
                 try {
                     instrumentation.retransformClasses(target);
-                } catch (Throwable trouble) {
-                    throw Unsafe.throwException(trouble);
                 } finally {
                     instrumentation.removeTransformer(transformer);
                 }
