@@ -14,11 +14,6 @@ description("a javac plugin that disables exception checking and other bothersom
 url("https://github.com/auoeke/uncheck")
 
 allprojects {
-    plugins.with {
-        apply("java")
-        apply("net.auoeke.gronk")
-    }
-
     group("net.auoeke")
     javaVersion(17)
 
