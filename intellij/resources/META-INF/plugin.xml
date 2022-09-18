@@ -32,8 +32,7 @@
     </description>
     <change-notes>
         <![CDATA[
-        Fixed a bug that causes errors on unassigned final fields in classes without constructors to be suppressed.<br>
-        Implemented final field multiple assignment in initializers.
+        Fixed a bug that causes files not in projects with uncheck to be affected.
         ]]>
     </change-notes>
     <depends>com.intellij.modules.platform</depends>
