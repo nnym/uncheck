@@ -12,10 +12,10 @@ final exports = file("exports.options")
 version("0.3.4")
 description("a javac plugin that disables exception checking and other bothersome restrictions")
 url("https://github.com/auoeke/uncheck")
+javaVersion(17)
 
 allprojects {
     group("net.auoeke")
-    javaVersion(17)
 
     repositories {
         mavenCentral()
