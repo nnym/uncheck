@@ -16,7 +16,6 @@ import com.sun.tools.javac.comp.Flow;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic;
-import lombok.SneakyThrows;
 import net.auoeke.reflect.ClassDefiner;
 import net.auoeke.reflect.ClassTransformer;
 import net.auoeke.reflect.Classes;
@@ -46,7 +45,6 @@ public class Uncheck implements Plugin, Opcodes {
         return "uncheck";
     }
 
-    @SneakyThrows
     @Override public void init(JavacTask task, String... args) {
         var context = ((BasicJavacTask) task).getContext();
         Invoker.findStatic(util, "context", void.class, Context.class).invoke(context);
