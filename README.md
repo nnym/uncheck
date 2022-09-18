@@ -38,12 +38,12 @@ class Example {
 [GitHub releases](https://github.com/auoeke/uncheck/releases): download and [install manually](https://www.jetbrains.com/help/idea/managing-plugins.html#install_plugin_from_disk)
 
 ## Using the compiler plugin
-It requires Java 17 or later and is hosted as `net.auoeke:uncheck` at https://maven.auoeke.net.
+It requires Java 17 or later and is hosted as `net.auoeke:uncheck` at Central.
 
 ### Gradle
 ```groovy
 repositories {
-    maven {url = "https://maven.auoeke.net"}
+    mavenCentral()
 }
 
 dependencies {
