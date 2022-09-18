@@ -28,6 +28,10 @@ buildSearchableOptions {
     enabled = false
 }
 
+jarSearchableOptions {
+    enabled = false
+}
+
 jar {
     archiveBaseName.set(rootProject.name)
 }
