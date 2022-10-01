@@ -8,6 +8,7 @@ plugins {
 
 final fatName = name + "-all"
 final exports = file("exports.options")
+final testProject = file("test/project").toPath()
 
 version("0.3.4")
 description("a javac plugin that disables exception checking and other bothersome restrictions")
@@ -24,7 +25,7 @@ allprojects {
 
 sourceSets {
     test {
-        java.srcDirs = ["test/project/source"]
+        java.srcDirs = [testProject.resolve("source")]
     }
 }
 
@@ -88,8 +89,14 @@ components.java {
     }
 }
 
+org.gradle.api.internal.project.DefaultProject project = project
+
 publishing {
     repositories {
+	    maven(testProject.resolve("build/repository")) {
+		    name = "test"
+	    }
+
         maven("s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
             username(findProperty("ossrh.id"))
             password(findProperty("ossrh.password"))

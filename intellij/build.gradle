@@ -33,6 +33,7 @@ jar {
 }
 
 runIde {
+	dependsOn(rootProject.publishAllPublicationsToTestRepository)
     jvmArgs("-Xmx4G")
 }
 
