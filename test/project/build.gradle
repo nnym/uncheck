@@ -9,10 +9,10 @@ sourceSets {
 }
 
 repositories {
-    mavenCentral()
-    mavenLocal()
+	maven {url = file("build/repository")}
+	mavenCentral()
 }
 
 dependencies {
-    annotationProcessor("net.auoeke:uncheck")
+    annotationProcessor("net.auoeke:uncheck:latest.release")
 }
