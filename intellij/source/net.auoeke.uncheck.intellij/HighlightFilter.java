@@ -77,6 +77,7 @@ public class HighlightFilter implements HighlightInfoFilter {
                 var declaration = parent.getParent() instanceof PsiReference reference ? reference.resolve() : ((PsiReference) parent).resolve();
 
                 return !(declaration instanceof PsiField field
+	                && initializer != null
                     && initializer.hasModifier(JvmModifier.STATIC) == field.hasModifier(JvmModifier.STATIC)
                     && !PsiUtil.isConstantExpression(field.getInitializer())
                     && PsiUtil.findEnclosingConstructorOrInitializer(LambdaUtil.getContainingClassOrLambda(element)) != initializer
