@@ -10,7 +10,7 @@ final fatName = name + "-all"
 final exports = file("exports.options")
 final testProject = file("test/project").toPath()
 
-version("0.3.4")
+version("0.3.5")
 description("a javac plugin that disables exception checking and other bothersome restrictions")
 url("https://github.com/auoeke/uncheck")
 javaVersion(17)
