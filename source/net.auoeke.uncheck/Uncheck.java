@@ -165,36 +165,21 @@ public class Uncheck implements Plugin, Opcodes {
             .collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())))
             .forEach((target, methods) -> {
                 ClassTransformer transformer = (module, __, name, type, domain, bytes) -> {
-                    if (type != target) {
-                        return null;
-                    }
+					var node = new ClassNode();
+					new ClassReader(bytes).accept(node, 0);
 
-                    try {
-                        var node = new ClassNode();
-                        new ClassReader(bytes).accept(node, 0);
+					for (var method : methods) {
+						method.invoke(null, node);
+					}
 
-                        for (var method : methods) {
-                            method.invoke(null, node);
-                        }
+					var writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+					node.accept(writer);
 
-                        var writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-                        node.accept(writer);
-
-                        return writer.toByteArray();
-                    } catch (Throwable trouble) {
-                        trouble.printStackTrace();
-
-                        throw trouble;
-                    }
+					return writer.toByteArray();
                 };
 
-                instrumentation.addTransformer(transformer, true);
-
-                try {
-                    instrumentation.retransformClasses(target);
-                } finally {
-                    instrumentation.removeTransformer(transformer);
-                }
+                instrumentation.addTransformer(transformer.ofType(target).exceptionLogging().singleUse(instrumentation), true);
+	            instrumentation.retransformClasses(target);
             });
     }
 }
