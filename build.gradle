@@ -2,17 +2,14 @@ plugins {
     id("java")
     id("maven-publish")
     id("signing")
-    id("net.auoeke.gronk").version("latest.release")
+    id("net.auoeke.gronk").version("3.+")
     id("com.github.johnrengelman.shadow").version("latest.release")
 }
 
-final fatName = name + "-all"
-final exports = file("exports.options")
 final testProject = file("test/project").toPath()
 
 version("0.3.7")
 description("a javac plugin that disables exception checking and other bothersome restrictions")
-url("https://github.com/auoeke/uncheck")
 javaVersion(17)
 
 allprojects {
@@ -21,6 +18,10 @@ allprojects {
     repositories {
         mavenCentral()
     }
+}
+
+gronk {
+	export(sourceSets.main, com.sun.source.util.Plugin.class.module.packages.collect {"jdk.compiler/" + it})
 }
 
 sourceSets {
@@ -44,36 +45,19 @@ java {
     withJavadocJar()
 }
 
-compileJava {
-    options.compilerArgs += exports.readLines().collectMany {it.split(" ").toList()}
-}
-
-javadoc {
-    options {
-        optionFiles(exports)
-    }
-}
-
 tasks.withType(Jar) {
     from(file("LICENSE")) {
         into("META-INF")
     }
 
-    manifest.attributes(
-        "Specification-Title": project.name,
-        "Specification-Version": project.version
-    )
+    manifest.attributes("Automatic-Module-Name": "uncheck")
 }
 
 shadowJar {
     assemble.dependsOn(it)
 
-    mergeManifests {
-        include {hasAttribute("Specification-Title", "reflect")}
-    }
-
-    archiveBaseName.set(fatName)
-    archiveClassifier.set(null)
+	archiveAppendix = archiveClassifier.get()
+    archiveClassifier = null
 
 	relocate("net.auoeke.reflect", "net.auoeke.uncheck.reflect")
 	relocate("net.auoeke.result", "net.auoeke.uncheck.result")
@@ -94,17 +78,15 @@ components.java {
     }
 }
 
-org.gradle.api.internal.project.DefaultProject project = project
-
 publishing {
     repositories {
 	    maven(testProject.resolve("build/repository")) {
 		    name = "test"
 	    }
 
-        maven("s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
-            username(findProperty("ossrh.id"))
-            password(findProperty("ossrh.password"))
+        maven(findProperty("maven.repository")) {
+            username(findProperty("maven.username"))
+            password(findProperty("maven.password"))
         }
     }
 
@@ -117,7 +99,7 @@ publishing {
             shadow.component(fat)
 
             groupId(project.group)
-            artifactId(fatName)
+            artifactId("$project.name-" + shadowJar.archiveAppendix.get())
             version(project.version)
 
             artifact(sourcesJar)
@@ -125,26 +107,28 @@ publishing {
         }
     }
 
-    publications.withType(MavenPublication) {MavenPublication publication ->
-        publication.pom {
+    publications.withType(MavenPublication) {
+        pom {
+	        url = "https://github.com/auoeke/uncheck"
+
             licenses {
                 license {
-                    name.set("MIT")
-                    url.set("https://opensource.org/licenses/MIT")
+                    name = "MIT"
+                    url = "https://opensource.org/licenses/MIT"
                 }
             }
 
             developers {
                 developer {
-                    id.set("auoeke")
-                    email.set("me@auoeke.net")
+                    id = "auoeke"
+                    email = "tjmnkrajyej@gmail.com"
                 }
             }
 
             scm {
-                connection.set("scm:git:git://github.com/auoeke/uncheck.git")
-                developerConnection.set("scm:git:git://github.com/auoeke/uncheck.git")
-                url.set("https://github.com/auoeke/uncheck/tree/master")
+	            url = "https://github.com/auoeke/uncheck/tree/master"
+	            connection = "scm:git:git://github.com/auoeke/uncheck.git"
+	            developerConnection = "scm:git:git://github.com/auoeke/uncheck.git"
             }
         }
     }
