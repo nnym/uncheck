@@ -10,7 +10,7 @@ final fatName = name + "-all"
 final exports = file("exports.options")
 final testProject = file("test/project").toPath()
 
-version("0.3.6")
+version("0.3.7")
 description("a javac plugin that disables exception checking and other bothersome restrictions")
 url("https://github.com/auoeke/uncheck")
 javaVersion(17)
@@ -74,6 +74,11 @@ shadowJar {
 
     archiveBaseName.set(fatName)
     archiveClassifier.set(null)
+
+	relocate("net.auoeke.reflect", "net.auoeke.uncheck.reflect")
+	relocate("net.auoeke.result", "net.auoeke.uncheck.result")
+	relocate("net.gudenau.lib.unsafe", "net.auoeke.uncheck.unsafe")
+	relocate("org.objectweb.asm", "net.auoeke.uncheck.asm")
 }
 
 test {

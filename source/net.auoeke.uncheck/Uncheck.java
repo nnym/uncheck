@@ -1,6 +1,5 @@
 package net.auoeke.uncheck;
 
-import java.lang.instrument.Instrumentation;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -37,7 +36,6 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
 public class Uncheck implements Plugin, Opcodes {
-    private static final Instrumentation instrumentation = Reflect.instrument().value();
     private static final Class<?> util;
 
     @Override public String getName() {
@@ -151,6 +149,7 @@ public class Uncheck implements Plugin, Opcodes {
     static {
         Modules.open(Plugin.class.getModule());
 
+	    var instrumentation = Reflect.instrument().value();
         var loader = Plugin.class.getClassLoader();
         var u = Classes.load(loader, Util.NAME);
         util = u == null ? ClassDefiner.make().loader(loader).classFile(Util.INTERNAL_NAME).define() : u;
