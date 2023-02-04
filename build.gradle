@@ -46,10 +46,6 @@ java {
 }
 
 tasks.withType(Jar) {
-    from(file("LICENSE")) {
-        into("META-INF")
-    }
-
     manifest.attributes("Automatic-Module-Name": "uncheck")
 }
 
