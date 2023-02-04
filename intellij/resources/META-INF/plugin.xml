@@ -1,12 +1,12 @@
-<idea-plugin url="https://git.auoeke.net/uncheck">
+<idea-plugin url="https://github.com/nnym/uncheck">
     <id>net.auoeke.uncheck</id>
     <name>Uncheck</name>
     <version>x</version>
-    <vendor url="https://auoeke.net" email="me@auoeke.net">auoeke</vendor>
+    <vendor url="https://auoeke.net" email="tjmnkrajyej@gmail.com">nnym</vendor>
     <idea-version since-build="222.3739.54"/>
     <description>
         <![CDATA[
-        The IDE side of <a href="https://git.auoeke.net/uncheck">uncheck</a>,
+        The IDE side of <a href="https://github.com/nnym/uncheck">uncheck</a>,
         a Java plugin that disables exception checking and other bothersome restrictions.
         This IDE plugin only fixes error highlighting.
         <pre>class Example {
