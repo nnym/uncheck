@@ -105,7 +105,7 @@ publishing {
 
     publications.withType(MavenPublication) {
         pom {
-	        url = "https://github.com/auoeke/uncheck"
+	        url = "https://github.com/nnym/uncheck"
 
             licenses {
                 license {
@@ -116,15 +116,15 @@ publishing {
 
             developers {
                 developer {
-                    id = "auoeke"
+                    id = "nnym"
                     email = "tjmnkrajyej@gmail.com"
                 }
             }
 
             scm {
-	            url = "https://github.com/auoeke/uncheck/tree/master"
-	            connection = "scm:git:git://github.com/auoeke/uncheck.git"
-	            developerConnection = "scm:git:git://github.com/auoeke/uncheck.git"
+	            url = "https://github.com/nnym/uncheck/tree/master"
+	            connection = "scm:git:git://github.com/nnym/uncheck.git"
+	            developerConnection = "scm:git:git://github.com/nnym/uncheck.git"
             }
         }
     }
