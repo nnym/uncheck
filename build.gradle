@@ -8,7 +8,7 @@ plugins {
 
 final testProject = file("test/project").toPath()
 
-version("0.3.7")
+version("0.3.8")
 description("a javac plugin that disables exception checking and other bothersome restrictions")
 javaVersion(17)
 
