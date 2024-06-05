@@ -1,9 +1,9 @@
 plugins {
-    id("java")
-    id("maven-publish")
-    // id("signing") // Gradle whines about some signing task's implicit dependency on a publication task.
-    id("net.auoeke.gronk").version("3.+")
-    id("com.github.johnrengelman.shadow").version("latest.release")
+	id("java")
+	id("maven-publish")
+	// id("signing") // Gradle whines about some signing task's implicit dependency on a publication task.
+	id("net.auoeke.gronk").version("3.+")
+	id("com.github.johnrengelman.shadow").version("latest.release")
 }
 
 final testProject = file("test/project").toPath()
@@ -13,11 +13,11 @@ description("a javac plugin that disables exception checking and other bothersom
 javaVersion(22)
 
 allprojects {
-    group("net.auoeke")
+	group("net.auoeke")
 
-    repositories {
-        mavenCentral()
-    }
+	repositories {
+		mavenCentral()
+	}
 }
 
 gronk {
@@ -25,9 +25,9 @@ gronk {
 }
 
 sourceSets {
-    test {
-        java.srcDirs = [testProject.resolve("source")]
-    }
+	test {
+		java.srcDirs = [testProject.resolve("source")]
+	}
 }
 
 repositories {
@@ -35,17 +35,17 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor("net.auoeke:uncheck-dummy") // Must avoid a dependency cycle somehow.
-    implementation("net.auoeke:reflect")
+	annotationProcessor("net.auoeke:uncheck-dummy") // Must avoid a dependency cycle somehow.
+	implementation("net.auoeke:reflect")
 
-    testAnnotationProcessor(rootProject)
-    testImplementation(gradleTestKit())
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+	testAnnotationProcessor(rootProject)
+	testImplementation(gradleTestKit())
+	testImplementation("org.junit.jupiter:junit-jupiter-api")
+	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }
 
 java {
-    withJavadocJar()
+	withJavadocJar()
 }
 
 javadoc {
@@ -55,18 +55,18 @@ javadoc {
 }
 
 tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:-preview"
+	options.compilerArgs << "-Xlint:-preview"
 }
 
 tasks.withType(Jar) {
-    manifest.attributes("Automatic-Module-Name": "uncheck")
+	manifest.attributes("Automatic-Module-Name": "uncheck")
 }
 
 shadowJar {
-    // assemble.dependsOn(it)
+	// assemble.dependsOn(it)
 
 	archiveAppendix = archiveClassifier.get()
-    archiveClassifier = null
+	archiveClassifier = null
 
 	relocate("net.auoeke.reflect", "net.auoeke.uncheck.reflect")
 	relocate("net.auoeke.result", "net.auoeke.uncheck.result")
@@ -74,78 +74,78 @@ shadowJar {
 }
 
 test {
-    dependsOn(publishToMavenLocal)
-    mustRunAfter(clean)
-    useJUnitPlatform()
+	dependsOn(publishToMavenLocal)
+	mustRunAfter(clean)
+	useJUnitPlatform()
 }
 
 components.java {
-    withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
-        // Exclude the fat JAR from the main publication.
-        skip()
-    }
+	withVariantsFromConfiguration(configurations.shadowRuntimeElements) {
+		// Exclude the fat JAR from the main publication.
+		skip()
+	}
 }
 
 publishing {
-    repositories {
-	    maven(testProject.resolve("build/repository")) {
-		    name = "test"
-	    }
+	repositories {
+		maven(testProject.resolve("build/repository")) {
+			name = "test"
+		}
 
-	    return
-        maven(findProperty("maven.repository")) {
-            username(findProperty("maven.username"))
-            password(findProperty("maven.password"))
-        }
-    }
+		return
+		maven(findProperty("maven.repository")) {
+			username(findProperty("maven.username"))
+			password(findProperty("maven.password"))
+		}
+	}
 
-    publications {
-        main(MavenPublication) {
-            from(components.java)
-        }
+	publications {
+		main(MavenPublication) {
+			from(components.java)
+		}
 
-        dummy(MavenPublication) {
-            from(components.java)
-            artifactId("$project.name-dummy")
-        }
+		dummy(MavenPublication) {
+			from(components.java)
+			artifactId("$project.name-dummy")
+		}
 
-        return // Shadow uses an old ASM that rejects Java 22.
-        fat(MavenPublication) {
-            shadow.component(fat)
+		return // Shadow uses an old ASM that rejects Java 22.
+		fat(MavenPublication) {
+			shadow.component(fat)
 
-            groupId(project.group)
-            artifactId("$project.name-" + shadowJar.archiveAppendix.get())
-            version(project.version)
+			groupId(project.group)
+			artifactId("$project.name-" + shadowJar.archiveAppendix.get())
+			version(project.version)
 
-            artifact(sourcesJar)
-            artifact(javadocJar)
-        }
-    }
+			artifact(sourcesJar)
+			artifact(javadocJar)
+		}
+	}
 
 	return
-    publications.withType(MavenPublication) {
-        pom {
-	        url = "https://github.com/nnym/uncheck"
+	publications.withType(MavenPublication) {
+		pom {
+			url = "https://github.com/nnym/uncheck"
 
-            licenses {
-                license {
-                    name = "MIT"
-                    url = "https://opensource.org/licenses/MIT"
-                }
-            }
+			licenses {
+				license {
+					name = "MIT"
+					url = "https://opensource.org/licenses/MIT"
+				}
+			}
 
-            developers {
-                developer {
-                    id = "nnym"
-                    email = "tjmnkrajyej@gmail.com"
-                }
-            }
+			developers {
+				developer {
+					id = "nnym"
+					email = "tjmnkrajyej@gmail.com"
+				}
+			}
 
-            scm {
-	            url = "https://github.com/nnym/uncheck/tree/master"
-	            connection = "scm:git:git://github.com/nnym/uncheck.git"
-	            developerConnection = "scm:git:git://github.com/nnym/uncheck.git"
-            }
-        }
-    }
+			scm {
+				url = "https://github.com/nnym/uncheck/tree/master"
+				connection = "scm:git:git://github.com/nnym/uncheck.git"
+				developerConnection = "scm:git:git://github.com/nnym/uncheck.git"
+			}
+		}
+	}
 }

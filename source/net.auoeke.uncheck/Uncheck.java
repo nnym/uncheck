@@ -47,13 +47,13 @@ public class Uncheck implements Plugin {
 
 		var location = Classes.location(Uncheck.class);
 
-        if (location != null && debug) {
-            JavacProcessingEnvironment.instance(context).getMessager().printMessage(Diagnostic.Kind.NOTE, "uncheck %s: %s; modified %tF %3$tT".formatted(
-                Uncheck.class.getPackage().getSpecificationVersion(),
-                location.getFile(),
-                location.openConnection().getLastModified()
-            ));
-        }
+		if (location != null && debug) {
+			JavacProcessingEnvironment.instance(context).getMessager().printMessage(Diagnostic.Kind.NOTE, "uncheck %s: %s; modified %tF %3$tT".formatted(
+				Uncheck.class.getPackage().getSpecificationVersion(),
+				location.getFile(),
+				location.openConnection().getLastModified()
+			));
+		}
 	}
 
 	@Override public boolean autoStart() {
@@ -174,8 +174,8 @@ public class Uncheck implements Plugin {
 		return Runtime.version().compareTo(Runtime.Version.parse(Integer.toString(version))) >= 0;
 	}
 
-    static {
-        Modules.open(Plugin.class.getModule());
+	static {
+		Modules.open(Plugin.class.getModule());
 
 		var instrumentation = Reflect.instrument().value();
 		var loader = Plugin.class.getClassLoader();
@@ -218,8 +218,8 @@ public class Uncheck implements Plugin {
 					});
 				};
 
-                instrumentation.addTransformer(transformer.ofType(target).exceptionLogging().singleUse(instrumentation), true);
-	            instrumentation.retransformClasses(target);
-            });
-    }
+				instrumentation.addTransformer(transformer.ofType(target).exceptionLogging().singleUse(instrumentation), true);
+				instrumentation.retransformClasses(target);
+			});
+	}
 }
