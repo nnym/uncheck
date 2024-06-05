@@ -1,14 +1,14 @@
 plugins {
     id("java")
     id("maven-publish")
-    id("signing")
+    // id("signing")
     id("net.auoeke.gronk").version("3.+")
     id("com.github.johnrengelman.shadow").version("latest.release")
 }
 
 final testProject = file("test/project").toPath()
 
-version("0.3.8")
+version("0.4.0")
 description("a javac plugin that disables exception checking and other bothersome restrictions")
 javaVersion(17)
 
@@ -80,6 +80,8 @@ publishing {
 		    name = "test"
 	    }
 
+	    return
+
         maven(findProperty("maven.repository")) {
             username(findProperty("maven.username"))
             password(findProperty("maven.password"))
@@ -102,6 +104,8 @@ publishing {
             artifact(javadocJar)
         }
     }
+
+	return
 
     publications.withType(MavenPublication) {
         pom {

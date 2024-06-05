@@ -1,12 +1,11 @@
 package net.auoeke.uncheck;
 
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.Plugin;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTrees;
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
@@ -14,10 +13,23 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic;
 
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import java.util.List;
+
 @SuppressWarnings("unused")
 public class Util {
     public static final String NAME = "net.auoeke.uncheck.Util";
     public static final String INTERNAL_NAME = "net/auoeke/uncheck/Util";
+
+	static final List<String> disallowedFeatures = List.of(
+		"MODULES",
+		"RECORDS",
+		"SEALED_CLASSES",
+		"PATTERN_SWITCH",
+		"REDUNDANT_STRICTFP",
+		"STRING_TEMPLATES"
+	);
 
     private static Trees trees;
 
@@ -40,12 +52,16 @@ public class Util {
         return false;
     }
 
-    // CantAssignValToFinalVar
+    // CantAssignValToVar
     public static boolean allowFinalFieldReassignment(Symbol.VarSymbol variable, Env<AttrContext> env) {
         return variable.getKind() == ElementKind.FIELD
             && env.enclClass.sym == variable.enclClass()
             && allowFinalFieldReassignment(trees.getPath(env.toplevel, env.tree), variable);
     }
+
+	public static boolean enablePreview(Source.Feature feature) {
+		return !disallowedFeatures.contains(feature.name());
+	}
 
     private static boolean allowFinalFieldReassignment(TreePath path, Symbol.VarSymbol variable) {
         while (true) {
