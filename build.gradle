@@ -1,16 +1,16 @@
 plugins {
     id("java")
     id("maven-publish")
-    // id("signing")
+    // id("signing") // Gradle whines about some signing task's implicit dependency on a publication task.
     id("net.auoeke.gronk").version("3.+")
     id("com.github.johnrengelman.shadow").version("latest.release")
 }
 
 final testProject = file("test/project").toPath()
 
-version("0.4.0")
+version("0.4.1")
 description("a javac plugin that disables exception checking and other bothersome restrictions")
-javaVersion(17)
+javaVersion(22)
 
 allprojects {
     group("net.auoeke")
@@ -30,10 +30,13 @@ sourceSets {
     }
 }
 
+repositories {
+	mavenLocal()
+}
+
 dependencies {
-    annotationProcessor("net.auoeke:uncheck-all")
+    annotationProcessor("net.auoeke:uncheck-dummy") // Must avoid a dependency cycle somehow.
     implementation("net.auoeke:reflect")
-    implementation("org.ow2.asm:asm-tree")
 
     testAnnotationProcessor(rootProject)
     testImplementation(gradleTestKit())
@@ -45,12 +48,22 @@ java {
     withJavadocJar()
 }
 
+javadoc {
+	options.addBooleanOption("-enable-preview", true)
+	options.addBooleanOption("Xdoclint:none", true)
+	options.addStringOption("-source", java.sourceCompatibility.toString())
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:-preview"
+}
+
 tasks.withType(Jar) {
     manifest.attributes("Automatic-Module-Name": "uncheck")
 }
 
 shadowJar {
-    assemble.dependsOn(it)
+    // assemble.dependsOn(it)
 
 	archiveAppendix = archiveClassifier.get()
     archiveClassifier = null
@@ -58,7 +71,6 @@ shadowJar {
 	relocate("net.auoeke.reflect", "net.auoeke.uncheck.reflect")
 	relocate("net.auoeke.result", "net.auoeke.uncheck.result")
 	relocate("net.gudenau.lib.unsafe", "net.auoeke.uncheck.unsafe")
-	relocate("org.objectweb.asm", "net.auoeke.uncheck.asm")
 }
 
 test {
@@ -81,7 +93,6 @@ publishing {
 	    }
 
 	    return
-
         maven(findProperty("maven.repository")) {
             username(findProperty("maven.username"))
             password(findProperty("maven.password"))
@@ -93,6 +104,12 @@ publishing {
             from(components.java)
         }
 
+        dummy(MavenPublication) {
+            from(components.java)
+            artifactId("$project.name-dummy")
+        }
+
+        return // Shadow uses an old ASM that rejects Java 22.
         fat(MavenPublication) {
             shadow.component(fat)
 
@@ -106,7 +123,6 @@ publishing {
     }
 
 	return
-
     publications.withType(MavenPublication) {
         pom {
 	        url = "https://github.com/nnym/uncheck"

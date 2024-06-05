@@ -7,8 +7,12 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Transform {
+@interface Transform {
     Class<?> value() default Uncheck.class;
 
     String[] name() default {};
+
+	String method() default "";
+
+	Class<?>[] parameters() default Transform.class;
 }
